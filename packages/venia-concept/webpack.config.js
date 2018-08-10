@@ -90,9 +90,6 @@ module.exports = async function(env) {
                 }
             ]
         },
-        performance: {
-            hints: 'warning'
-        },
         resolve: await MagentoResolver.configure({
             paths: {
                 root: __dirname
@@ -165,6 +162,9 @@ module.exports = async function(env) {
                 }
             })
         );
+        config.performance = {
+            hints: 'warning'
+        };
     } else {
         throw Error(`Unsupported environment phase in webpack config: `);
     }
