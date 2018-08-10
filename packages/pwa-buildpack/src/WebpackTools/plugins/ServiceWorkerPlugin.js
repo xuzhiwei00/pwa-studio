@@ -7,7 +7,7 @@ class ServiceWorkerPlugin {
     static validateOptions = optionsValidator('ServiceWorkerPlugin', {
         'env.phase': 'string',
         serviceWorkerFileName: 'string',
-        'paths.assets': 'string'
+        'paths.output': 'string'
     });
     constructor(config) {
         ServiceWorkerPlugin.validateOptions('ServiceWorkerPlugin', config);
