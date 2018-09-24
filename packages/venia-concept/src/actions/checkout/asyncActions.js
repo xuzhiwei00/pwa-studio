@@ -1,40 +1,16 @@
-import { createActions } from 'redux-actions';
 import { RestApi } from '@magento/peregrine';
 
 import { closeDrawer } from 'src/actions/app';
 import { clearGuestCartId, getCartDetails } from 'src/actions/cart';
 import { getCountries } from 'src/actions/directory';
-
-const prefix = 'CHECKOUT';
-const actionTypes = ['EDIT', 'RESET'];
-
-// classify action creators by domain
-// e.g., `actions.order.submit` => CHECKOUT/ORDER/SUBMIT
-// a `null` value corresponds to the default creator function
-const actionMap = {
-    CART: {
-        SUBMIT: null,
-        ACCEPT: null,
-        REJECT: null
-    },
-    INPUT: {
-        SUBMIT: null,
-        ACCEPT: null,
-        REJECT: null
-    },
-    ORDER: {
-        SUBMIT: null,
-        ACCEPT: null,
-        REJECT: null
-    }
-};
-
-const actions = createActions(actionMap, ...actionTypes, { prefix });
-export default actions;
-
-/* async action creators */
+import actions from './actions';
 
 const { request } = RestApi.Magento2;
+
+export const beginCheckout = () =>
+    async function thunk(dispatch) {
+        dispatch(actions.begin());
+    };
 
 export const resetCheckout = () =>
     async function thunk(dispatch) {
@@ -47,28 +23,27 @@ export const editOrder = section =>
         dispatch(actions.edit(section));
     };
 
-export const submitCart = () =>
-    async function thunk(dispatch) {
-        dispatch(actions.cart.accept());
-    };
-
 export const submitInput = payload =>
     async function thunk(dispatch, getState) {
-        const { cart } = getState();
+        dispatch(actions.input.submit(payload));
+        await dispatch(getCountries());
+
+        const { cart, directory } = getState();
         const { guestCartId } = cart;
+        const { countries } = directory;
+        let { formValues: address } = payload;
 
         if (!guestCartId) {
             throw new Error('Missing required information: guestCartId');
         }
 
-        dispatch(actions.input.submit(payload));
-        await dispatch(getCountries());
-
-        const { directory } = getState();
-        const { countries } = directory;
+        try {
+            address = formatAddress(address, countries);
+        } catch (error) {
+            throw error;
+        }
 
         try {
-            const address = formatAddress(payload.formValues, countries);
             const response = await request(
                 `/rest/V1/guest-carts/${guestCartId}/shipping-information`,
                 {
@@ -127,7 +102,7 @@ export const submitOrder = () =>
 
 /* helpers */
 
-function formatAddress(address = {}, countries = []) {
+export function formatAddress(address = {}, countries = []) {
     const country = countries.find(({ id }) => id === 'US');
 
     if (!country) {
@@ -135,7 +110,12 @@ function formatAddress(address = {}, countries = []) {
     }
 
     const { region_code } = address;
-    const regions = country.available_regions || [];
+    const { available_regions: regions } = country;
+
+    if (!(Array.isArray(regions) && regions.length)) {
+        throw new Error('Country "US" does not contain any available regions.');
+    }
+
     const region = regions.find(({ code }) => code === region_code);
 
     if (!region) {

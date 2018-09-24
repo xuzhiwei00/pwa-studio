@@ -1,13 +1,6 @@
-import { createActions } from 'redux-actions';
 import { RestApi } from '@magento/peregrine';
 
-const prefix = 'DIRECTORY';
-const actionTypes = ['GET_COUNTRIES'];
-
-const actions = createActions(...actionTypes, { prefix });
-export default actions;
-
-/* async action creators */
+import actions from './actions';
 
 const { request } = RestApi.Magento2;
 
@@ -15,7 +8,7 @@ export const getCountries = () =>
     async function thunk(dispatch, getState) {
         const { directory } = getState();
 
-        if (directory.countries) {
+        if (directory && directory.countries) {
             return;
         }
 

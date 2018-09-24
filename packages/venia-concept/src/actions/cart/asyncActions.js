@@ -1,23 +1,9 @@
-import { createActions } from 'redux-actions';
 import { RestApi } from '@magento/peregrine';
 
 import { closeDrawer, toggleDrawer } from 'src/actions/app';
 import checkoutActions from 'src/actions/checkout';
 import BrowserPersistence from 'src/util/simplePersistence';
-
-const prefix = 'CART';
-const actionTypes = [
-    'ADD_ITEM',
-    'REQUEST_GUEST_CART',
-    'RECEIVE_GUEST_CART',
-    'REQUEST_DETAILS',
-    'UPDATE_DETAILS'
-];
-
-const actions = createActions(...actionTypes, { prefix });
-export default actions;
-
-/* async action creators */
+import actions from './actions';
 
 const { request } = RestApi.Magento2;
 const storage = new BrowserPersistence();
@@ -39,12 +25,12 @@ export const createGuestCart = () =>
 
         // if a guest cart exists in storage, act like we just received it
         if (guestCartId) {
-            dispatch(actions.receiveGuestCart(guestCartId));
+            dispatch(actions.getGuestCart.receive(guestCartId));
             return;
         }
 
         // otherwise, request a new guest cart
-        dispatch(actions.requestGuestCart());
+        dispatch(actions.getGuestCart.request());
 
         try {
             const id = await request('/rest/V1/guest-carts', {
@@ -52,11 +38,10 @@ export const createGuestCart = () =>
             });
 
             // write to storage in the background
-            storage.setItem('guestCartId', id);
-
-            dispatch(actions.receiveGuestCart(id));
+            saveGuestCartId(id);
+            dispatch(actions.getGuestCart.receive(id));
         } catch (error) {
-            dispatch(actions.createGuestCart(error));
+            dispatch(actions.getGuestCart.receive(error));
         }
     };
 
@@ -66,6 +51,8 @@ export const addItemToCart = (payload = {}) => {
     writeImageToCache(item);
 
     return async function thunk(dispatch, getState) {
+        dispatch(actions.addItem.request(payload));
+
         try {
             const { cart } = getState();
             const { guestCartId } = cart;
@@ -89,9 +76,11 @@ export const addItemToCart = (payload = {}) => {
                 }
             );
 
-            dispatch(actions.addItem({ cartItem, item, quantity }));
+            dispatch(actions.addItem.receive({ cartItem, item, quantity }));
         } catch (error) {
             const { response } = error;
+
+            dispatch(actions.addItem.receive(error));
 
             // check if the guest cart has expired
             if (response && response.status === 404) {
@@ -100,8 +89,6 @@ export const addItemToCart = (payload = {}) => {
                 // then retry this operation
                 return thunk(...arguments);
             }
-
-            dispatch(actions.addItem(error));
         }
 
         await Promise.all([
@@ -118,7 +105,7 @@ export const getCartDetails = (payload = {}) => {
         const { cart } = getState();
         const { guestCartId } = cart;
 
-        dispatch(actions.requestDetails(guestCartId));
+        dispatch(actions.getDetails.request(guestCartId));
 
         // if there isn't a guest cart, create one
         // then retry this operation
@@ -138,13 +125,21 @@ export const getCartDetails = (payload = {}) => {
                 })
             ]);
 
-            details.items.forEach(item => {
-                item.image = item.image || imageCache[item.sku] || {};
-            });
+            const { items } = details;
 
-            dispatch(actions.updateDetails({ details, totals }));
+            // for each item in the cart, look up its image in the cache
+            // and merge it into the item object
+            if (imageCache && Array.isArray(items) && items.length) {
+                items.forEach(item => {
+                    item.image = item.image || imageCache[item.sku] || {};
+                });
+            }
+
+            dispatch(actions.getDetails.receive({ details, totals }));
         } catch (error) {
             const { response } = error;
+
+            dispatch(actions.getDetails.receive(error));
 
             // check if the guest cart has expired
             if (response && response.status === 404) {
@@ -153,8 +148,6 @@ export const getCartDetails = (payload = {}) => {
                 // then retry this operation
                 return thunk(...arguments);
             }
-
-            dispatch(actions.updateDetails(error));
         }
     };
 };
@@ -170,14 +163,14 @@ export const toggleCart = () =>
 
         // if the cart drawer is open, close it
         if (app.drawer === 'cart') {
-            await dispatch(closeDrawer());
-            return;
+            return dispatch(closeDrawer());
         }
 
         // otherwise open the cart and load its contents
-        await Promise.all[
-            (dispatch(toggleDrawer('cart')), dispatch(getCartDetails()))
-        ];
+        await Promise.all([
+            dispatch(toggleDrawer('cart')),
+            dispatch(getCartDetails())
+        ]);
     };
 
 /* helpers */
@@ -196,6 +189,10 @@ export async function retrieveGuestCartId() {
     return storage.getItem('guestCartId');
 }
 
+export async function saveGuestCartId(id) {
+    return storage.setItem('guestCartId', id);
+}
+
 export async function clearGuestCartId() {
     return storage.removeItem('guestCartId');
 }
@@ -208,7 +205,7 @@ async function saveImageCache(cache) {
     return storage.setItem('imagesBySku', cache);
 }
 
-async function writeImageToCache(item) {
+async function writeImageToCache(item = {}) {
     const { media_gallery_entries: media, sku } = item;
 
     if (sku) {
