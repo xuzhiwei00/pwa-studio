@@ -61,19 +61,6 @@ ReactDOM.render(
     document.getElementById('root')
 );
 
-if (process.env.SERVICE_WORKER && 'serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker
-            .register(process.env.SERVICE_WORKER)
-            .then(registration => {
-                console.log('Service worker registered: ', registration);
-            })
-            .catch(error => {
-                console.log('Service worker registration failed: ', error);
-            });
-    });
-}
-
 window.addEventListener('online', () => {
     store.dispatch(app.setOnline());
 });

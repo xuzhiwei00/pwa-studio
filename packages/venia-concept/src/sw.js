@@ -2,6 +2,12 @@ const thirtyDays = 30 * 24 * 60 * 60;
 workbox.skipWaiting();
 workbox.clientsClaim();
 
+if (process.env.NODE_ENV !== 'production') {
+    workbox.setConfig({
+        debug: true
+    });
+}
+
 workbox.routing.registerRoute('/', workbox.strategies.staleWhileRevalidate());
 
 workbox.routing.registerRoute(

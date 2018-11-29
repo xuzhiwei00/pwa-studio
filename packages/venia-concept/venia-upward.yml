@@ -5,18 +5,18 @@ body: response.body
 response:
   when:
     - matches: request.url.pathname
+      pattern: '^/sw.js$'
+      use: serviceWorkerServedFromRoot
+    - matches: request.url.pathname
       pattern: '^/(graphql|rest|media/)'
       use: proxy
-    - matches: request.url.pathname
-      pattern: '^/(icons/.+|favicon.ico$|manifest.json$|veniaClosed.png$)'
-      use: static
     - matches: urlKey
       pattern: '.'
       use: appShell
     - matches: request.url.pathname
       pattern: '^/$'
       use: appShell
-  default: bundles
+  default: assets
 
 proxy:
   target: env.MAGENTO_BACKEND_URL
@@ -107,10 +107,10 @@ genericObject:
       inline:
         "Hello world!"
 
-bundles:
+assets:
   directory:
     inline: './dist'
 
-static:
+serviceWorkerServedFromRoot:
   directory:
-    inline: './static'
+    inline: './dist/js'

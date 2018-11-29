@@ -13,6 +13,7 @@ const {
 const path = require('path');
 const babelEnvDeps = require('webpack-babel-env-deps');
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const configureBabel = require('./babel.config.js');
 
@@ -37,11 +38,6 @@ module.exports = async function(env) {
     const mode = (env && env.mode) || process.env.NODE_ENV || 'development';
 
     const babelOptions = configureBabel(mode);
-
-    const enableServiceWorkerDebugging =
-        validEnv.ENABLE_SERVICE_WORKER_DEBUGGING;
-
-    const serviceWorkerFileName = validEnv.SERVICE_WORKER_FILE_NAME;
 
     const config = {
         mode,
@@ -113,36 +109,29 @@ module.exports = async function(env) {
             }
         }),
         plugins: [
+            new ServiceWorkerPlugin({
+                debug: validEnv.ENABLE_SERVICE_WORKER_DEBUGGING,
+                src: path.resolve(themePaths.src, 'sw.js')
+            }),
             await makeMagentoRootComponentsPlugin({
                 rootComponentsDirs,
                 context: __dirname
             }),
-            new webpack.DefinePlugin({
-                'process.env': {
-                    NODE_ENV: JSON.stringify(mode),
-                    // Blank the service worker file name to stop the app from
-                    // attempting to register a service worker in index.js.
-                    // Only register a service worker when in production or in the
-                    // special case of debugging the service worker itself.
-                    SERVICE_WORKER: JSON.stringify(
-                        mode === 'production' || enableServiceWorkerDebugging
-                            ? serviceWorkerFileName
-                            : false
-                    )
-                }
-            }),
-            new ServiceWorkerPlugin({
-                env: { mode },
-                enableServiceWorkerDebugging,
-                serviceWorkerFileName,
-                paths: themePaths,
-                injectManifest: true,
-                injectManifestConfig: {
-                    include: [/\.js$/],
-                    swSrc: './src/sw.js',
-                    swDest: 'sw.js'
-                }
-            })
+            // new webpack.DefinePlugin({
+            //     'process.env': {
+            //         NODE_ENV: JSON.stringify(mode),
+            //         // Blank the service worker file name to stop the app from
+            //         // attempting to register a service worker in index.js.
+            //         // Only register a service worker when in production or in the
+            //         // special case of debugging the service worker itself.
+            //         SERVICE_WORKER: JSON.stringify(
+            //             mode === 'production' || enableServiceWorkerDebugging
+            //                 ? serviceWorkerFileName
+            //                 : false
+            //         )
+            //     }
+            // }),
+            new CopyWebpackPlugin(['./media'])
         ],
         optimization: {
             splitChunks: {
