@@ -1,7 +1,7 @@
-jest.mock('workbox-webpack-plugin');
+jest.mock('@httptoolkit/workbox-webpack-plugin');
 jest.mock('write-file-webpack-plugin');
 
-const WorkboxPlugin = require('workbox-webpack-plugin');
+const WorkboxPlugin = require('@httptoolkit/workbox-webpack-plugin');
 const WriteFileWebpackPlugin = require('write-file-webpack-plugin');
 
 const ServiceWorkerPlugin = require('../ServiceWorkerPlugin');

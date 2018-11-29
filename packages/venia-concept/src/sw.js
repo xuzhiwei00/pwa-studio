@@ -2,7 +2,7 @@ const thirtyDays = 30 * 24 * 60 * 60;
 workbox.skipWaiting();
 workbox.clientsClaim();
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development') {
     workbox.setConfig({
         debug: true
     });

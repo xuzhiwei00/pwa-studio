@@ -50,7 +50,8 @@ module.exports = async function(env) {
             publicPath: '/',
             filename: 'js/[name].js',
             strictModuleExceptionHandling: true,
-            chunkFilename: 'js/[name]-[chunkhash].js'
+            chunkFilename: 'js/[name]-[chunkhash].js',
+            globalObject: 'this'
         },
         module: {
             rules: [
