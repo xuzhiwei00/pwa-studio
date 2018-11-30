@@ -1,5 +1,7 @@
-import React, { PureComponent } from 'react';
-import { bool, func, object, shape, string } from 'prop-types';
+import React, { Component } from 'react';
+import { Query } from 'react-apollo';
+import gql from 'graphql-tag';
+import { bool, object, shape, string } from 'prop-types';
 
 import classify from 'src/classify';
 import Button from 'src/components/Button';
@@ -10,7 +12,34 @@ import CategoryTree from './categoryTree';
 import NavHeader from './navHeader';
 import defaultClasses from './navigation.css';
 
-class Navigation extends PureComponent {
+const getCategory = gql`
+    query category($id: Int!) {
+        category(id: $id) {
+            children_count
+            children {
+                children_count
+                id
+                level
+                name
+                path
+                path_in_store
+                position
+                url_key
+                url_path
+            }
+            id
+            level
+            name
+            path
+            path_in_store
+            position
+            url_key
+            url_path
+        }
+    }
+`;
+
+class Navigation extends Component {
     static propTypes = {
         classes: shape({
             authBar: string,
@@ -33,7 +62,6 @@ class Navigation extends PureComponent {
             userName: string
         }),
         firstname: string,
-        getAllCategories: func.isRequired,
         email: string,
         isOpen: bool,
         isSignedIn: bool,
@@ -41,39 +69,30 @@ class Navigation extends PureComponent {
         signInError: object
     };
 
-    static getDerivedStateFromProps(props, state) {
-        if (!state.rootNodeId && props.rootCategoryId) {
-            return {
-                ...state,
-                rootNodeId: props.rootCategoryId
-            };
-        }
-
-        return state;
-    }
-
-    componentDidMount() {
-        this.props.getAllCategories();
-    }
-
     state = {
         isCreateAccountOpen: false,
         isSignInOpen: false,
-        rootNodeId: null
+        rootNodeId: 2
     };
 
     get categoryTree() {
         const { props, setRootNodeId, state } = this;
         const { rootNodeId } = state;
-        const { categories, closeDrawer } = props;
+        const { closeDrawer } = props;
 
         return rootNodeId ? (
-            <CategoryTree
-                nodes={categories}
-                rootNodeId={rootNodeId}
-                onNavigate={closeDrawer}
-                updateRootNodeId={setRootNodeId}
-            />
+            <Query query={getCategory} variables={{ id: rootNodeId }}>
+                {({ data, loading }) =>
+                    loading ? null : (
+                        <CategoryTree
+                            nodes={data.category.children}
+                            rootNodeId={rootNodeId}
+                            onNavigate={closeDrawer}
+                            updateRootNodeId={setRootNodeId}
+                        />
+                    )
+                }
+            </Query>
         ) : null;
     }
 

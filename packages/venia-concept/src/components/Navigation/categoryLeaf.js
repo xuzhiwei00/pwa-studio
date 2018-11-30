@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { arrayOf, func, number, objectOf, shape, string } from 'prop-types';
+import { func, number, shape, string } from 'prop-types';
 
 import classify from 'src/classify';
 import defaultClasses from './categoryLeaf.css';
@@ -14,15 +14,10 @@ class Leaf extends Component {
             root: string,
             text: string
         }),
-        nodeId: number.isRequired,
-        nodes: objectOf(
-            shape({
-                childrenData: arrayOf(number).isRequired,
-                id: number.isRequired,
-                name: string.isRequired,
-                urlPath: string
-            })
-        ),
+        node: shape({
+            id: number.isRequired,
+            name: string.isRequired
+        }),
         onNavigate: func
     };
 
@@ -35,14 +30,13 @@ class Leaf extends Component {
     };
 
     render() {
-        const { children, classes, nodeId, nodes } = this.props;
-        const node = nodes[nodeId];
+        const { children, classes, node } = this.props;
         const text = children ? children({ node }) : node.name;
 
         return (
             <Link
                 className={classes.root}
-                to={`/${node.urlPath}${urlSuffix}`}
+                to={`/${node.url_path}${urlSuffix}`}
                 onClick={this.handleClick}
             >
                 <span className={classes.text}>{text}</span>

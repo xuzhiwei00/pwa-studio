@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { func, number, objectOf, shape, string } from 'prop-types';
+import { arrayOf, func, number, shape, string } from 'prop-types';
 
 import classify from 'src/classify';
 import Branch from './categoryBranch';
@@ -13,9 +13,10 @@ class Tree extends Component {
             root: string,
             tree: string
         }),
-        nodes: objectOf(
+        nodes: arrayOf(
             shape({
                 id: number.isRequired,
+                name: string.isRequired,
                 position: number.isRequired
             })
         ),
@@ -26,27 +27,24 @@ class Tree extends Component {
 
     get leaves() {
         const { nodes, onNavigate, rootNodeId, updateRootNodeId } = this.props;
-        const { childrenData: childNodeIds } = nodes[rootNodeId];
+        const elements = [];
+        console.log(nodes);
 
-        const leaves = childNodeIds.reduce((elements, id) => {
-            const childNode = nodes[id];
-            const { childrenData, position } = childNode;
-            const isLeaf = !childrenData.length;
-            const elementProps = { nodeId: id, nodes };
+        for (const node of nodes) {
+            const { children_count, id: nodeId, position } = node;
+            const isBranch = parseInt(children_count) > 0;
 
-            const element = isLeaf ? (
-                <Leaf {...elementProps} onNavigate={onNavigate} />
+            const element = isBranch ? (
+                <Branch node={node} onDive={updateRootNodeId} />
             ) : (
-                <Branch {...elementProps} onDive={updateRootNodeId} />
+                <Leaf node={node} onNavigate={onNavigate} />
             );
 
-            elements[position - 1] = <li key={id}>{element}</li>;
-
-            return elements;
-        }, []);
+            elements[position - 1] = <li key={nodeId}>{element}</li>;
+        }
 
         if (nodes[rootNodeId].urlPath) {
-            leaves.push(
+            elements.push(
                 <li key={rootNodeId}>
                     <Leaf
                         nodeId={rootNodeId}
@@ -59,7 +57,7 @@ class Tree extends Component {
             );
         }
 
-        return leaves;
+        return elements;
     }
 
     render() {

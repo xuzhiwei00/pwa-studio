@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { arrayOf, func, number, objectOf, shape, string } from 'prop-types';
+import { func, number, shape, string } from 'prop-types';
 
 import classify from 'src/classify';
 import defaultClasses from './categoryLeaf.css';
@@ -11,27 +11,21 @@ class Branch extends Component {
             root: string,
             text: string
         }),
-        nodeId: number.isRequired,
-        nodes: objectOf(
-            shape({
-                childrenData: arrayOf(number).isRequired,
-                id: number.isRequired,
-                name: string.isRequired,
-                urlPath: string
-            })
-        ),
+        node: shape({
+            id: number.isRequired,
+            name: string.isRequired
+        }).isRequired,
         onDive: func.isRequired
     };
 
     handleClick = () => {
-        const { nodeId, onDive } = this.props;
+        const { node, onDive } = this.props;
 
-        onDive(nodeId);
+        onDive(node.id);
     };
 
     render() {
-        const { children, classes, nodeId, nodes } = this.props;
-        const node = nodes[nodeId];
+        const { children, classes, node } = this.props;
         const text = children ? children({ node }) : node.name;
 
         return (
