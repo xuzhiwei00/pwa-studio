@@ -1,5 +1,5 @@
 const path = require('path');
-const WorkboxPlugin = require('workbox-webpack-plugin');
+const WorkboxPlugin = require('@httptoolkit/workbox-webpack-plugin');
 
 const loaderPaths = {
     entryPointServiceWorkerLoader: require.resolve(
@@ -22,10 +22,12 @@ class ServiceWorkerPlugin {
         this.swEntryName = this.swPublicPath.split('.')[0]; // entry has no extension
     }
     apply(compiler) {
+        this.compiler = compiler;
         if (compiler.options.mode === 'development' && !this.debug) {
             console.warn(
                 `\n[pwa-buildpack]: ServiceWorkerPlugin disables all ServiceWorkers by default in development mode, to prevent accidental caching. To enable ServiceWorkers in development, pass \`debug: true\` to the ServiceWorkerPlugin configuration, or set the environment variable MAGENTO_BUILDPACK_DEBUG_SERVICEWORKER.\n`
             );
+            this.disabled = true;
         } else if (!compiler.inputFileSystem.readFileSync(this.swSrcPath)) {
             throw new Error(
                 `[pwa-buildpack]: ServiceWorkerPlugin could not locate ServiceWorker source file at '${
@@ -33,7 +35,6 @@ class ServiceWorkerPlugin {
                 }'`
             );
         }
-        this.compiler = compiler;
         this.addEntry();
         this.applyInjectLoaders();
         this.applyInjectManifest();
