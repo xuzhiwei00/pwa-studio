@@ -70,7 +70,7 @@ module.exports = async function(env) {
                         /peregrine\/src\//,
                         babelEnvDeps.include()
                     ],
-                    test: /\.(mjs|js|graphql)$/,
+                    test: /\.(mjs|js)$/,
                     use: [
                         {
                             loader: 'babel-loader',
