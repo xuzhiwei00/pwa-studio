@@ -2,16 +2,10 @@ const thirtyDays = 30 * 24 * 60 * 60;
 workbox.skipWaiting();
 workbox.clientsClaim();
 
-if (process.env.NODE_ENV === 'development') {
-    workbox.setConfig({
-        debug: true
-    });
-}
-
 workbox.routing.registerRoute('/', workbox.strategies.staleWhileRevalidate());
 
 workbox.routing.registerRoute(
-    new RegExp('\\.html$'),
+    new RegExp('(^$|\\.html$)'),
     workbox.strategies.networkFirst()
 );
 
@@ -52,3 +46,4 @@ workbox.precaching.precacheAndRoute(self.__precacheManifest || []);
 // generate a response.
 
 // TODO: Add fallbacks
+// yup

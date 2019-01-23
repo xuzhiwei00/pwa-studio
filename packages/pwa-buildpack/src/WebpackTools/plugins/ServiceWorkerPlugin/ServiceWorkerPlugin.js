@@ -1,3 +1,4 @@
+const debug = require('../../../util/debug').makeFileLogger(__dirname);
 const path = require('path');
 const WorkboxPlugin = require('@httptoolkit/workbox-webpack-plugin');
 
@@ -20,6 +21,7 @@ class ServiceWorkerPlugin {
             config.debug || process.env.MAGENTO_BUILDPACK_DEBUG_SERVICEWORKER;
         this.swPublicPath = path.basename(this.swSrcPath);
         this.swEntryName = this.swPublicPath.split('.')[0]; // entry has no extension
+        debug('created %o', this);
     }
     apply(compiler) {
         this.compiler = compiler;
@@ -35,6 +37,7 @@ class ServiceWorkerPlugin {
                 }'`
             );
         }
+        debug('ServiceWorkerPlugin#apply()');
         this.addEntry();
         this.applyInjectLoaders();
         this.applyInjectManifest();
@@ -66,15 +69,23 @@ class ServiceWorkerPlugin {
         const fallthru =
             typeof oldFilename === 'string' ? () => oldFilename : oldFilename;
 
-        output.filename = data =>
-            data.chunk.name === swEntryName
+        output.filename = data => {
+            debug(
+                `ServiceWorkerPlugin#addEntry output.filename callback called with %o, fallthru %s`,
+                { chunkName: data.chunk.name },
+                fallthru
+            );
+            return data.chunk.name === swEntryName
                 ? this.swPublicPath
                 : fallthru(data);
+        };
 
         // TODO: when Webpack supports ServiceWorkers as a target, the below
         // will no longer be necessary. This changes the global object in
         // Webpack's boilerplate from 'window' to 'this'.
         output.globalObject = "(typeof self !== 'undefined' ? self : this)";
+
+        debug(`ServiceWorkerPlugin#addEntry() ran: %O`, { entry, output });
     }
 
     addLoader(loader, mod, opts) {
@@ -99,18 +110,26 @@ class ServiceWorkerPlugin {
         } = this;
 
         compiler.hooks.compilation.tap(pluginName, compilation => {
-            const entries = Object.entries(compilation.options.entry);
+            const entries = Object.values(compilation.options.entry);
 
-            const isEntryPoint = mod =>
-                entries.some(entry =>
-                    typeof entry === 'string'
-                        ? mod.resource === entry
-                        : entry.includes(mod.resource)
+            // Only triggers once per entry point; since webpack-dev-server adds
+            // its own scripts to the entry array, the loader could accidentally
+            // inject this code more than once.
+            const isEntryPoint = mod => {
+                const foundEntryPoint = entries.findIndex(
+                    entry =>
+                        mod.resource.indexOf('/node_modules/') === -1 &&
+                        (typeof entry === 'string'
+                            ? mod.resource === entry
+                            : entry.includes(mod.resource))
                 );
+                if (foundEntryPoint !== -1) {
+                    return entries.splice(foundEntryPoint);
+                }
+            };
             const isServiceWorkerEntry = mod => mod.resource === swSrcPath;
 
-            // const hasLoader = mod =>
-            //     mod.loaders.some(({ loader }) => loader === loaderPath);
+            debug(`ServiceWorkerPlugin#applyInjectLoaders compilation hook`);
 
             compilation.hooks.normalModuleLoader.tap(
                 pluginName,
@@ -119,11 +138,19 @@ class ServiceWorkerPlugin {
                     //     return;
                     // }
                     if (isServiceWorkerEntry(mod)) {
+                        debug(
+                            `ServiceWorkerPlugin normalModuleLoader hook: %s isServiceWorkerEntry!`,
+                            mod.resource
+                        );
                         this.addLoader(
                             loaderPaths.serviceWorkerDebugLoader,
                             mod
                         );
                     } else if (isEntryPoint(mod)) {
+                        debug(
+                            'ServiceWorkerPlugin normalModuleLoader hook: %s isEntryPoint!',
+                            mod.resource
+                        );
                         this.addLoader(
                             loaderPaths.entryPointServiceWorkerLoader,
                             mod

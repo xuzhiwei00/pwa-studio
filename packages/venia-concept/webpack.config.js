@@ -111,27 +111,14 @@ module.exports = async function(env) {
         }),
         plugins: [
             new ServiceWorkerPlugin({
-                debug: validEnv.ENABLE_SERVICE_WORKER_DEBUGGING,
+                mode,
+                debug: true, //validEnv.ENABLE_SERVICE_WORKER_DEBUGGING,
                 src: path.resolve(themePaths.src, 'sw.js')
             }),
             await makeMagentoRootComponentsPlugin({
                 rootComponentsDirs,
                 context: __dirname
             }),
-            // new webpack.DefinePlugin({
-            //     'process.env': {
-            //         NODE_ENV: JSON.stringify(mode),
-            //         // Blank the service worker file name to stop the app from
-            //         // attempting to register a service worker in index.js.
-            //         // Only register a service worker when in production or in the
-            //         // special case of debugging the service worker itself.
-            //         SERVICE_WORKER: JSON.stringify(
-            //             mode === 'production' || enableServiceWorkerDebugging
-            //                 ? serviceWorkerFileName
-            //                 : false
-            //         )
-            //     }
-            // }),
             new CopyWebpackPlugin(['./media'])
         ],
         optimization: {
@@ -150,7 +137,7 @@ module.exports = async function(env) {
         }
     };
     if (mode === 'development') {
-        config.devtool = 'eval-source-map';
+        config.devtool = 'source-map';
         const devServerConfig = {
             publicPath: config.output.publicPath,
             graphqlPlayground: {
