@@ -9,6 +9,8 @@ import app from 'src/actions/app';
 import App from 'src/components/App';
 import './index.css';
 
+import { ToastsProvider } from 'src/components/Toasts/context';
+
 const { BrowserPersistence } = Util;
 const apiBase = new URL('/graphql', location.origin).toString();
 
@@ -38,7 +40,9 @@ ReactDOM.render(
         apollo={{ link: authLink.concat(Adapter.apolloLink(apiBase)) }}
         store={store}
     >
-        <App />
+        <ToastsProvider>
+            <App />
+        </ToastsProvider>
     </Adapter>,
     document.getElementById('root')
 );

@@ -6,45 +6,48 @@ import Mask from 'src/components/Mask';
 import MiniCart from 'src/components/MiniCart';
 import Navigation from 'src/components/Navigation';
 import OnlineIndicator from 'src/components/OnlineIndicator';
+
+import { ToastContainer } from 'src/components/Toasts';
+import { useToastActions } from 'src/components/Toasts/hooks';
+
 import renderRoutes from './renderRoutes';
 
-class App extends Component {
-    static propTypes = {
-        app: shape({
-            drawer: string,
-            overlay: bool.isRequired
-        }).isRequired,
-        closeDrawer: func.isRequired
-    };
+function App({ app, closeDrawer }) {
+    const { addToast } = useToastActions();
+    const { drawer, overlay, hasBeenOffline, isOnline } = app;
+    const navIsOpen = drawer === 'nav';
+    const cartIsOpen = drawer === 'cart';
 
-    get onlineIndicator() {
-        const { app } = this.props;
-        const { hasBeenOffline, isOnline } = app;
-
-        // Only show online indicator when
-        // online after being offline
-        return hasBeenOffline ? <OnlineIndicator isOnline={isOnline} /> : null;
+    if (hasBeenOffline) {
+        if (isOnline) {
+            addToast('info', 'You are online.');
+        } else {
+            addToast(
+                'error',
+                'You are offline. Some features may be unavailable.'
+            );
+        }
     }
 
-    render() {
-        const { app, closeDrawer } = this.props;
-        const { onlineIndicator } = this;
-        const { drawer, overlay } = app;
-        const navIsOpen = drawer === 'nav';
-        const cartIsOpen = drawer === 'cart';
-
-        return (
-            <Fragment>
-                <Main isMasked={overlay}>
-                    {onlineIndicator}
-                    {renderRoutes()}
-                </Main>
-                <Mask isActive={overlay} dismiss={closeDrawer} />
-                <Navigation isOpen={navIsOpen} />
-                <MiniCart isOpen={cartIsOpen} />
-            </Fragment>
-        );
-    }
+    return (
+        <Fragment>
+            <Main isMasked={overlay}>
+                <ToastContainer />
+                {renderRoutes()}
+            </Main>
+            <Mask isActive={overlay} dismiss={closeDrawer} />
+            <Navigation isOpen={navIsOpen} />
+            <MiniCart isOpen={cartIsOpen} />
+        </Fragment>
+    );
 }
+
+App.propTypes = {
+    app: shape({
+        drawer: string,
+        overlay: bool.isRequired
+    }).isRequired,
+    closeDrawer: func.isRequired
+};
 
 export default App;
