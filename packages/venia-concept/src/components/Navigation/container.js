@@ -1,6 +1,6 @@
 import { connect } from 'src/drivers';
 import { closeDrawer } from 'src/actions/app';
-import { getAllCategories } from 'src/actions/catalog';
+import catalogActions from 'src/actions/catalog';
 import {
     completePasswordReset,
     createAccount,
@@ -8,6 +8,8 @@ import {
     resetPassword
 } from 'src/actions/user';
 import Navigation from './navigation';
+
+const { updateCategories } = catalogActions
 
 const mapStateToProps = ({ catalog, user }) => {
     const { categories, rootCategoryId } = catalog;
@@ -26,10 +28,10 @@ const mapStateToProps = ({ catalog, user }) => {
 };
 
 const mapDispatchToProps = {
+    updateCategories,
     closeDrawer,
     completePasswordReset,
     createAccount,
-    getAllCategories,
     getUserDetails,
     resetPassword
 };
