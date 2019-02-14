@@ -7,7 +7,7 @@
   "description": "Build/Layout optimization tooling and Peregrine framework adapters for the Magento PWA",
   "main": "dist/index.js",
   "scripts": {
-    "build": "babel src --out-dir dist --root-mode 'root' --source-maps --copy-files",
+    "build": "babel src --out-dir dist --root-mode \"root\" --source-maps --copy-files",
     "build:dev": "yarn run build",
     "clean": "rimraf dist",
     "prebuild": "yarn run clean",
@@ -47,6 +47,7 @@
     "execa": "~1.0.0",
     "express": "~4.16.4",
     "graphql-playground-middleware-express": "~1.7.12",
+    "is-elevated": "~2.0.1",
     "lodash": "~4.17.11",
     "node-fetch": "~2.3.0",
     "portscanner": "~2.2.0",

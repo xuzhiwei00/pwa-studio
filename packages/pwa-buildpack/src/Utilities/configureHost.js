@@ -4,7 +4,7 @@ const { createHash } = require('crypto');
 const devcert = require('devcert');
 const os = require('os');
 const chalk = require('chalk');
-const execa = require('execa');
+const isElevated = require('is-elevated');
 const { username } = os.userInfo();
 
 /**
@@ -30,11 +30,27 @@ proto.isNSSInstalled = function() {
 const DEFAULT_NAME = 'my-pwa';
 const DEV_DOMAIN = 'local.pwadev';
 
-const isSudoSession = () =>
-    execa
-        .shell('sudo -n true')
-        .then(() => true)
-        .catch(() => false);
+const willPromptForPassword = async () => {
+    try {
+        // On Windows we will have no sudo or a non-standard sudo, so we should
+        // not even try this.
+        if (process.platform !== 'win32') {
+            // If standard `sudo` has run in the TTY recently, it may still have
+            // a credential cached and it won't prompt for the password.
+            // The -n flag means "non-interactive", so sudo will exit nonzero
+            // instead of password prompting if the shell is not currently
+            // authenticated.
+            await execa.shell('sudo -n true');
+            // If that succeeds, the shell is authenticated and it won't prompt:
+            return false;
+        }
+    } catch (e) {
+        // Recover; the rest of this method will run if sudo -n failed.
+    }
+    const elevated = await isElevated();
+    // Will prompt if _not_ elevated.
+    return !elevated;
+};
 
 const alreadyProvisioned = hostname =>
     devcert.configuredDomains().includes(hostname);
@@ -55,7 +71,7 @@ function getCert(hostname) {
         try {
             if (!alreadyProvisioned(hostname)) {
                 if (process.stdin.isTTY) {
-                    if (!(await isSudoSession())) {
+                    if (await willPromptForPassword()) {
                         console.warn(
                             chalk.greenBright(`Creating a local development domain requires temporary administrative privileges.
 Please enter the password for ${chalk.whiteBright(
