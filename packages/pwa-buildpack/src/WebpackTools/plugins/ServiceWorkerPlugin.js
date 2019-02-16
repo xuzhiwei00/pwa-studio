@@ -2,6 +2,8 @@
 const WorkboxPlugin = require('workbox-webpack-plugin');
 const WriteFileWebpackPlugin = require('write-file-webpack-plugin');
 const optionsValidator = require('../../util/options-validator');
+const { highlight, logger } = require('../../Utilities/logging');
+const log = logger();
 
 class ServiceWorkerPlugin {
     static validateOptions = optionsValidator('ServiceWorkerPlugin', {
@@ -73,8 +75,12 @@ class ServiceWorkerPlugin {
             } else {
                 // TODO: (feature) emit a structured { code, severity, resolution } object
                 // on Environment that might throw and might not
-                console.warn(
-                    `Emitting no ServiceWorker in development mode. To enable development mode for ServiceWorkers, pass \`enableServiceWorkerDebugging: true\` to the ServiceWorkerPlugin configuration.`
+                log.info(
+                    `Emitting no ServiceWorker in development mode. To enable development mode for ServiceWorkers, pass ${highlight(
+                        'enableServiceWorkerDebugging: true'
+                    )} to the ServiceWorkerPlugin configuration, or set the environment variable ${highlight(
+                        'ENABLE_SERVICE_WORKER_DEBUGGING'
+                    )} to 1.`
                 );
             }
         } else {

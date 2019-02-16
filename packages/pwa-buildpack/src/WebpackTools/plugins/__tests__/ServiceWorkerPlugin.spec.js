@@ -1,5 +1,6 @@
 jest.mock('workbox-webpack-plugin');
 jest.mock('write-file-webpack-plugin');
+jest.mock('../../../Utilities/logging');
 
 const WorkboxPlugin = require('workbox-webpack-plugin');
 const WriteFileWebpackPlugin = require('write-file-webpack-plugin');
@@ -64,7 +65,7 @@ test('.apply calls WorkboxPlugin.GenerateSW in prod', () => {
     expect(workboxApply).toHaveBeenCalledWith(fakeCompiler);
 });
 
-test('.apply calls nothing but warns in console in dev', () => {
+test('.apply calls nothing in dev', () => {
     const plugin = new ServiceWorkerPlugin({
         env: {
             mode: 'development'
@@ -75,20 +76,11 @@ test('.apply calls nothing but warns in console in dev', () => {
             output: 'path/to/assets'
         }
     });
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => {});
 
     plugin.apply({});
 
     expect(WriteFileWebpackPlugin).not.toHaveBeenCalled();
     expect(WorkboxPlugin.GenerateSW).not.toHaveBeenCalled();
-
-    expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining(
-            `Emitting no ServiceWorker in development mode.`
-        )
-    );
-
-    console.warn.mockRestore();
 });
 
 test('.apply generates and writes out a serviceworker when enableServiceWorkerDebugging is set', () => {

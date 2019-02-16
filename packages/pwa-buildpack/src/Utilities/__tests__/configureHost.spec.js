@@ -1,6 +1,7 @@
 jest.mock('devcert');
 jest.mock('execa');
 jest.mock('is-elevated', () => jest.fn(async () => true));
+jest.mock('../logging');
 
 const FAKE_CWD = '/path/to/fake/cwd';
 
@@ -16,6 +17,8 @@ const fakeCertPair = {
     key: Buffer.from('fakeKey'),
     cert: Buffer.from('fakeCert')
 };
+
+isElevated.mockReturnValue(true);
 
 const simulate = {
     certCached() {
@@ -46,10 +49,6 @@ const simulate = {
         devcert.certificateFor.mockRejectedValueOnce(new Error(message));
         return simulate;
     },
-    certTimedOut() {
-        createDeferred();
-        devcert.certificateFor.mockReturnValueOnce(deferred);
-    },
     noPackageFound() {
         jest.resetModuleRegistry();
         pkg.mockImplementationOnce(() => {
@@ -70,16 +69,14 @@ const simulate = {
     }
 };
 
-// intercept and disable console output
+// intercept and simulate cwd value
 beforeEach(() => {
     jest.spyOn(process, 'cwd');
     process.cwd.mockReturnValue(FAKE_CWD);
-    jest.spyOn(console, 'warn').mockImplementation();
 });
 
 afterEach(() => {
     process.cwd.mockRestore();
-    console.warn.mockRestore();
 });
 
 const hostRegex = (
@@ -100,10 +97,6 @@ test('produces a secure domain, port set, and ssl cert from default name if no p
         cert: 'fakeCert',
         key: 'fakeKey'
     });
-    expect(console.warn.mock.calls[0]).toMatchObject([
-        expect.stringContaining('Could not autodetect'),
-        expect.any(Error)
-    ]);
     expect(devcert.certificateFor).toHaveBeenCalledTimes(1);
 
     // expect same port set per host
@@ -114,14 +107,8 @@ test('produces a secure domain, port set, and ssl cert from default name if no p
 
 test('produces a secure domain with default name if package name is unusable', async () => {
     simulate.packageNameIs(undefined).certCached();
-
     const { hostname } = await configureHost();
     expect(hostname).toMatch(hostRegex());
-
-    expect(console.warn.mock.calls[0]).toMatchObject([
-        expect.stringContaining('Could not autodetect'),
-        expect.any(Error)
-    ]);
 });
 
 test('produces a secure domain from package name', async () => {
@@ -168,19 +155,14 @@ test('produces a secure domain from exact domain provided', async () => {
     expect(hostname).toBe('gagh.biz');
 });
 
-test('warns about sudo prompt if cert needs to be created', async () => {
+test('password prompts', async () => {
     simulate.certCreated();
-    const oldIsTTY = process.stdin.isTTY;
-    process.stdin.isTTY = true;
     await configureHost({ subdomain: 'best-boss-i-ever-had' });
-    expect(console.warn).not.toHaveBeenCalled();
     simulate.certCreated();
     simulate.passwordRequired();
-    await configureHost({ subdomain: 'bar-none' });
-    process.stdin.isTTY = oldIsTTY;
-    expect(console.warn).toHaveBeenCalledWith(
-        expect.stringMatching('requires temporary administrative privileges')
-    );
+    await expect(
+        configureHost({ subdomain: 'bar-none' })
+    ).resolves.not.toThrow();
 });
 
 test('returns false if not already provisioned and non-interactive specified', async () => {
@@ -201,36 +183,6 @@ test('fails informatively if devcert fails', async () => {
     simulate.certFailed();
     simulate.passwordRequired();
     await expect(configureHost({ subdomain: 'uss.hood' })).rejects.toThrowError(
-        'Could not authenticate'
+        'Could not setup'
     );
-});
-
-test('fails if process is not connected to tty', async () => {
-    simulate.certCreated();
-    simulate.passwordRequired();
-    const oldIsTTY = process.stdin.isTTY;
-    process.stdin.isTTY = false;
-    await expect(configureHost({ subdomain: 'uss.hood' })).rejects.toThrowError(
-        'interactive'
-    );
-    process.stdin.isTTY = oldIsTTY;
-});
-
-test('fails after a timeout if devcert never fulfills', async () => {
-    simulate.certNotCached();
-    simulate.certNotCached();
-    jest.useFakeTimers();
-    const oldIsTTY = process.stdin.isTTY;
-    process.stdin.isTTY = true;
-    let resolveHangingPromise;
-    const promise = new Promise(resolve => (resolveHangingPromise = resolve));
-    devcert.certificateFor.mockReturnValueOnce(promise);
-    const certPromise = configureHost({ subdomain: 'no-hurry' });
-    jest.advanceTimersByTime(35000);
-    await expect(certPromise).rejects.toThrowError(
-        'Timed out waiting for SSL certificate generation and trust.'
-    );
-    resolveHangingPromise();
-    jest.useRealTimers();
-    process.stdin.isTTY = oldIsTTY;
 });

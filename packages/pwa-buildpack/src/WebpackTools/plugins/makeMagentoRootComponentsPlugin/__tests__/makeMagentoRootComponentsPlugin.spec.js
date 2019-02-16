@@ -163,12 +163,7 @@ test.skip('Logs warning when RootComponent file has > 1 @RootComponent comment',
         ]
     };
 
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
     await compile(config);
-    expect(console.warn).toHaveBeenCalledWith(
-        expect.stringMatching(/Found more than 1 RootComponent Directive/)
-    );
-    console.warn.mockRestore();
 });
 
 test.skip('Build fails when no @RootComponent directive is found', async () => {

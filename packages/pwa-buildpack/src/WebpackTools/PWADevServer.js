@@ -6,7 +6,6 @@ const {
 } = require('graphql-playground-middleware-express');
 const url = require('url');
 const optionsValidator = require('../util/options-validator');
-const chalk = require('chalk');
 const configureHost = require('../Utilities/configureHost');
 const portscanner = require('portscanner');
 const { readdir: readdirAsync, readFile: readFileAsync } = require('fs');
@@ -14,22 +13,17 @@ const { promisify } = require('util');
 const readdir = promisify(readdirAsync);
 const readFile = promisify(readFileAsync);
 const { resolve, relative } = require('path');
-const boxen = require('boxen');
 const addImgOptMiddleware = require('../Utilities/addImgOptMiddleware');
+const { highlight, logger } = require('../Utilities/logging');
+const log = logger();
 
-const secureHostWarning = chalk.redBright(`
-    To enable all PWA features and avoid ServiceWorker collisions, PWA Studio
-    highly recommends using the ${chalk.whiteBright(
+const secureHostWarning = `To enable all PWA features and avoid ServiceWorker collisions, PWA Studio highly recommends using the ${highlight(
         '"provideSecureHost"'
-    )} configuration
-    option of PWADevServer. 
-`);
+)} configuration option of PWADevServer. `;
 
-const helpText = `
-    To autogenerate a unique host based on project name
-    and location on disk, simply add:
-    ${chalk.whiteBright('provideSecureHost: true')}
-    to PWADevServer configuration options.
+const helpText = `To autogenerate a unique host based on project name and location on disk, simply add: ${highlight(
+    'provideSecureHost: true'
+)} to PWADevServer configuration options.
 
     More options for this feature are described in documentation.
 `;
@@ -71,34 +65,17 @@ const PWADevServer = {
             },
             after(app, server) {
                 app.use(debugErrorMiddleware());
-                let readyNotice = chalk.green(
-                    `PWADevServer ready at ${chalk.greenBright.underline(
-                        devServerConfig.publicPath
-                    )}`
-                );
+                const origin = devServerConfig.publicPath;
+                server.middleware.waitUntilValid(() => {
+                    log.ready(`PWADevServer running at ${highlight(origin)}`);
                 if (config.graphqlPlayground) {
-                    readyNotice +=
-                        '\n' +
-                        chalk.blueBright(
-                            `GraphQL Playground ready at ${chalk.blueBright.underline(
-                                new url.URL(
-                                    '/graphiql',
-                                    devServerConfig.publicPath
-                                )
+                        log.bonus(
+                            `GraphQL playground running at ${highlight(
+                                new url.URL('/graphiql', origin).href
                             )}`
                         );
                 }
-                server.middleware.waitUntilValid(() =>
-                    console.log(
-                        boxen(readyNotice, {
-                            borderColor: 'gray',
-                            float: 'center',
-                            align: 'center',
-                            margin: 1,
-                            padding: 1
-                        })
-                    )
-                );
+                });
             },
             before(app) {
                 addImgOptMiddleware(app, config.env);
@@ -110,29 +87,20 @@ const PWADevServer = {
             // backwards compatibility
             if (id) {
                 const desiredDomain = id + '.' + configureHost.DEV_DOMAIN;
-                console.warn(
-                    debug.errorMsg(
-                        chalk.yellowBright(`
-The 'id' configuration option is deprecated and will be removed in upcoming
-releases. It has been replaced by 'provideSecureHost' configuration which can
-be configured to have the same effect as 'id'.
-
-  To create the subdomain ${desiredDomain}, use:
-    ${chalk.whiteBright(
+                log.warn(
+                    `The 'id' configuration option is deprecated and will be removed in upcoming releases. It has been replaced by 'provideSecureHost' configuration which can be configured to have the same effect as 'id'.`
+                );
+                log.info(`To create the subdomain ${desiredDomain}, use:
+    ${highlight(
         `provideSecureHost: { subdomain: "${id}", addUniqueHash: false }`
     )}
-
   To omit the default ${
       configureHost.DEV_DOMAIN
-  } and specify a full alternate domain, use:
-    ${chalk.whiteBright(
+ } and specify a full alternate domain, use: ${highlight(
         `provideSecureHost: { exactDomain: "${id}.example.dev" }`
-    )}
-  (or any other top-level domain).
+                )} (or any other top-level domain).
 
-  ${helpText}`)
-                    )
-                );
+ ${helpText}`);
 
                 hostConf.addUniqueHash = false;
                 hostConf.subdomain = id;
@@ -163,20 +131,14 @@ be configured to have the same effect as 'id'.
             ) {
                 devServerConfig.port = requestedPort;
             } else {
-                console.warn(
-                    chalk.yellowBright(
-                        '\n' +
-                            debug.errorMsg(
-                                `This project's dev server is configured to run at ${hostname}:${requestedPort}, but port ${requestedPort} is in use. The dev server will run temporarily on port ${chalk.underline.whiteBright(
+                log.warn(
+                    `This project's dev server is configured to run at ${hostname}:${requestedPort}, but port ${requestedPort} is in use. The dev server will run temporarily on port ${highlight(
                                     devServerConfig.port
                                 )}; you may see inconsistent ServiceWorker behavior.`
-                            ) +
-                            '\n'
-                    )
                 );
             }
         } else {
-            console.warn(secureHostWarning + helpText);
+            log.warn(secureHostWarning + helpText);
         }
 
         const { graphqlPlayground } = config;

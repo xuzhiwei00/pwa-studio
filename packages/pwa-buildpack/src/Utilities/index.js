@@ -1,4 +1,5 @@
 module.exports = {
     addImgOptMiddleware: require('./addImgOptMiddleware'),
-    configureHost: require('./configureHost')
+    configureHost: require('./configureHost'),
+    logging: require('./logging')
 };

@@ -2,6 +2,9 @@ const validEnv = require('./validate-environment')(process.env);
 
 const webpack = require('webpack');
 const {
+    Utilities: {
+        logging: { highlight, logger, logoEmoji }
+    },
     WebpackTools: {
         makeMagentoRootComponentsPlugin,
         ServiceWorkerPlugin,
@@ -41,8 +44,11 @@ const libs = [
     'redux-thunk'
 ];
 
+const log = logger(logoEmoji(9881), process.stderr); // gear
+
 module.exports = async function(env) {
     const mode = (env && env.mode) || process.env.NODE_ENV || 'development';
+    log.bundle(`Running webpack in ${highlight(mode)} mode`);
 
     const enableServiceWorkerDebugging =
         validEnv.ENABLE_SERVICE_WORKER_DEBUGGING;

@@ -1,9 +1,11 @@
 const debug = require('../util/debug').makeFileLogger(__filename);
+const { highlight, logger } = require('./logging');
+const log = logger();
 let cache;
 let expressSharp;
 let missingDeps = '';
 const markDepInvalid = (dep, e) => {
-    missingDeps += `- ${dep}: Reason: ${e.message.split('\n')[0]}\n`;
+    missingDeps += highlight(`- ${dep}: Reason: ${e.message.split('\n')[0]}\n`);
 };
 try {
     cache = require('apicache').middleware;
@@ -30,31 +32,35 @@ function addImgOptMiddleware(app, env = process.env) {
     );
     let cacheMiddleware;
     let sharpMiddleware;
-    try {
-        cacheMiddleware = cache(imgOptConfig.cacheExpires, null, {
-            debug: imgOptConfig.debugCache,
-            redisClient:
-                imgOptConfig.redis &&
-                require('redis').redisClient(imgOptConfig.redis)
-        });
-    } catch (e) {
-        markDepInvalid('apicache', e);
+    if (cache) {
+        try {
+            cacheMiddleware = cache(imgOptConfig.cacheExpires, null, {
+                debug: imgOptConfig.debugCache,
+                redisClient:
+                    imgOptConfig.redis &&
+                    require('redis').redisClient(imgOptConfig.redis)
+            });
+        } catch (e) {
+            markDepInvalid('apicache', e);
+        }
     }
-    try {
-        sharpMiddleware = expressSharp({
-            baseHost: imgOptConfig.baseHost
-        });
-    } catch (e) {
-        markDepInvalid('@magento/express-sharp', e);
+    if (expressSharp) {
+        try {
+            sharpMiddleware = expressSharp({
+                baseHost: imgOptConfig.baseHost
+            });
+        } catch (e) {
+            markDepInvalid('@magento/express-sharp', e);
+        }
     }
     if (missingDeps) {
-        console.warn(
+        log.warn(
             `Cannot add image optimization middleware due to dependencies that are not installed or are not compatible with this environment:
 ${missingDeps}
 Images will be served uncompressed.
 
 If possible, install additional tools to build NodeJS native dependencies:
-https://github.com/nodejs/node-gyp#installation`
+${highlight('https://github.com/nodejs/node-gyp#installation')}`
         );
     } else {
         app.use(imgOptConfig.mountPoint, cacheMiddleware, sharpMiddleware);

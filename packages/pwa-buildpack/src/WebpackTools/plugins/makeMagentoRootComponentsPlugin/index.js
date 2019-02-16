@@ -6,6 +6,8 @@ const directiveParser = require('@magento/directive-parser');
 const VirtualModulePlugin = require('virtual-module-webpack-plugin');
 const { isAbsolute, join, relative, normalize } = require('path');
 
+const log = require('../../../Utilities/logging').logger();
+
 const toRootComponentMapKey = (type, variant = 'default') =>
     `RootCmp_${type}__${variant}`;
 
@@ -75,7 +77,7 @@ class MagentoRootComponentsPlugin {
                         }
 
                         if (rootComponentDirectives.length > 1) {
-                            console.warn(
+                            log.warn(
                                 `Found more than 1 RootComponent Directive in ${rootComponentFile}. Only the first will be used`
                             );
                         }
@@ -86,7 +88,7 @@ class MagentoRootComponentsPlugin {
                         } = rootComponentDirectives[0];
 
                         if (!pageTypes || pageTypes.length === 0) {
-                            console.warn(
+                            log.warn(
                                 `No pageTypes specified for RootComponent ${rootComponentFile}. RootComponent will never be used.`
                             );
                         } else {

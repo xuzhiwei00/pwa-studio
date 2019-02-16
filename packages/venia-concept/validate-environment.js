@@ -1,3 +1,12 @@
+const {
+    highlight,
+    logger,
+    logoEmoji
+} = require('@magento/pwa-buildpack/dist/Utilities/logging');
+
+// writing to stdout interferes with webpack json output
+const log = logger(logoEmoji(9881), process.stderr);
+
 function validateEnvironment(env) {
     const envalid = require('envalid');
     const { str, bool, url } = envalid;
@@ -80,47 +89,27 @@ function validateEnvironment(env) {
         });
         const { readFileSync } = require('fs');
         const path = require('path');
-        const chalk = require('chalk');
         const dotenv = require('dotenv');
-        let parsedEnv;
         const envPath = path.join(__dirname, '.env');
         try {
-            parsedEnv = dotenv.parse(readFileSync(envPath));
-            // don't use console.log, which writes to stdout. writing to stdout
-            // interferes with webpack json output
-            console.warn(
-                chalk.green(
-                    `Using environment variables from ${chalk.greenBright(
-                        '.env'
-                    )}`
-                )
+            // if it's parseable, then envalid is using it
+            dotenv.parse(readFileSync(envPath));
+            log.info(
+                `Using environment variables from ${highlight(
+                    path.relative(process.cwd(), envPath)
+                )}`
             );
-            if (env.DEBUG || env.NODE_DEBUG) {
-                console.warn(
-                    '\n  ' +
-                        require('util')
-                            .inspect(parsedEnv, {
-                                colors: true,
-                                compact: false
-                            })
-                            .replace(/\s*[\{\}]\s*/gm, '')
-                            .replace(/,\n\s+/gm, '\n  ') +
-                        '\n'
-                );
-            }
         } catch (e) {
             if (e.code === 'ENOENT') {
-                console.warn(
-                    chalk.redBright(
-                        `\nNo .env file in ${__dirname}\n\tYou may need to copy '.env.dist' to '.env' to begin, or create your own '.env' file manually.`
-                    )
+                log.fatal(
+                    `No .env file in ${__dirname}. You may need to copy '${highlight(
+                        path.join(__dirname, '.env.dist')
+                    )}' to '.env' to begin, or create your own '.env' file manually.`
                 );
             } else {
-                console.warn(
-                    chalk.redBright(
-                        `\nCould not retrieve and parse ${envPath}.`,
-                        e
-                    )
+                log.fatal(
+                    `Could not retrieve and parse ${highlight(envPath)}.`,
+                    e
                 );
             }
         }
