@@ -26,10 +26,10 @@ class ForgotPasswordForm extends Component {
     // There is an issue with handling initial values in Input.
     // TODO: Pass initial value to email input after fixing this bug.
     render() {
-        const { classes, onSubmit } = this.props;
+        const { classes, initialValues, onSubmit } = this.props;
 
         return (
-            <Form className={classes.form} onSubmit={onSubmit}>
+            <Form className={classes.form} initialValues={initialValues} onSubmit={onSubmit}>
                 <Input
                     label="Email Address"
                     autoComplete="email"
