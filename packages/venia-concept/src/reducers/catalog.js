@@ -5,14 +5,14 @@ import actions from 'src/actions/catalog';
 export const name = 'catalog';
 
 const fromPairs = pairs => {
-    const result = {}
+    const result = {};
 
     for (const [key, value] of pairs) {
-        result[key] = value
+        result[key] = value;
     }
 
-    return result
-}
+    return result;
+};
 
 const initialState = {
     categories: {},
@@ -24,28 +24,28 @@ const initialState = {
 
 const reducerMap = {
     [actions.updateCategories]: (state, { payload }) => {
-        const { id } = payload
-        const currentCategory = state.categories[id] || {}
+        const { id } = payload;
+        const currentCategory = state.categories[id] || {};
 
         // if category has already been fetched, do nothing
         if (currentCategory.children) {
-            return state
+            return state;
         }
 
         // sort children by `position`
         const children = payload.children.sort((a, b) => {
             if (a.position > b.position) {
-                return 1
+                return 1;
             } else if (a.position === b.position && a.id > b.id) {
-                return 1
+                return 1;
             } else {
-                return -1
+                return -1;
             }
-        })
+        });
 
         // use a Map to preserve sort order
         // since a plain object with numeric keys would lose it
-        const childMap = new Map()
+        const childMap = new Map();
 
         // merge children and add them to the Map, keyed by `id`
         for (const child of children) {
@@ -53,7 +53,7 @@ const reducerMap = {
                 ...child,
                 ...(state.categories[child.id] || {}),
                 parentId: id
-            })
+            });
         }
 
         // merge in the fetched child last
@@ -67,16 +67,16 @@ const reducerMap = {
                     ...currentCategory,
                     ...payload,
                     children: [...childMap.keys()],
-                    children_count: childMap.size,
+                    children_count: childMap.size
                 }
             }
-        }
+        };
     },
     [actions.setRootCategory]: (state, { payload }) => {
         return {
             ...state,
-            rootCategoryId: payload,
-        }
+            rootCategoryId: payload
+        };
     },
     [actions.setCurrentPage.receive]: (state, { payload, error }) => {
         if (error) {

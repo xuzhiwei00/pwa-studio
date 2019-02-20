@@ -1,31 +1,35 @@
-import React, { useCallback } from "react"
-import { func, number, shape, string } from "prop-types"
+import React, { useCallback } from 'react';
+import { func, number, shape, string } from 'prop-types';
 
-import { mergeClasses } from "src/classify"
-import defaultClasses from "./categoryBranch.css"
+import { mergeClasses } from 'src/classify';
+import defaultClasses from './categoryBranch.css';
 
 const Branch = props => {
-    const { category, setCategoryId } = props
-    const { id, name } = category
-    const classes = mergeClasses(defaultClasses, props.classes)
+    const { category, setCategoryId } = props;
+    const { id, name } = category;
+    const classes = mergeClasses(defaultClasses, props.classes);
 
     const handleClick = useCallback(
         () => {
-            setCategoryId(id)
+            setCategoryId(id);
         },
         [id, setCategoryId]
-    )
+    );
 
     return (
         <li className={classes.root}>
-            <button className={classes.target} type="button" onClick={handleClick}>
+            <button
+                className={classes.target}
+                type="button"
+                onClick={handleClick}
+            >
                 <span className={classes.text}>{name}</span>
             </button>
         </li>
-    )
-}
+    );
+};
 
-export default Branch
+export default Branch;
 
 Branch.propTypes = {
     category: shape({
@@ -33,7 +37,7 @@ Branch.propTypes = {
         name: string.isRequired,
         parentId: number,
         position: number,
-        url_path: string,
+        url_path: string
     }).isRequired,
-    setCategoryId: func.isRequired,
-}
+    setCategoryId: func.isRequired
+};

@@ -1,49 +1,46 @@
-import React, { useCallback } from "react"
-import { bool, func, shape, string } from "prop-types"
+import React, { useCallback } from 'react';
+import { bool, func, shape, string } from 'prop-types';
+import ChevronUpIcon from 'react-feather/dist/icons/chevron-up';
 
-import { mergeClasses } from "src/classify"
-import Button from "src/components/Button"
-import defaultClasses from "./authBar.css"
+import { mergeClasses } from 'src/classify';
+import Button from 'src/components/Button';
+import Icon from 'src/components/Icon';
+import UserInformation from 'src/components/MyAccountMenuPage/UserInformation';
+import defaultClasses from './authBar.css';
 
 const AuthBar = props => {
-    const { disabled, onSignIn, userIsSignedIn } = props
-    const classes = mergeClasses(defaultClasses, props.classes)
+    const { disabled, onSignIn, onViewAccount, user, userIsSignedIn } = props;
+    const classes = mergeClasses(defaultClasses, props.classes);
 
-    const handleClick = useCallback(
+    const signIn = useCallback(
         () => {
-            onSignIn()
+            onSignIn();
         },
         [onSignIn]
-    )
+    );
 
     const child = userIsSignedIn ? (
-        <span>
-            {"User"}
-        </span>
+        <button type="button" onClick={onViewAccount}>
+            <UserInformation user={user} />
+            <Icon src={ChevronUpIcon} />
+        </button>
     ) : (
-        <Button
-            disabled={!!disabled}
-            priority="high"
-            onClick={handleClick}
-        >
-            {"Sign In"}
+        <Button disabled={!!disabled} priority="high" onClick={signIn}>
+            {'Sign In'}
         </Button>
-    )
+    );
 
-    return (
-        <div className={classes.root}>
-            {child}
-        </div>
-    )
-}
+    return <div className={classes.root}>{child}</div>;
+};
 
-export default AuthBar
+export default AuthBar;
 
 AuthBar.propTypes = {
     classes: shape({
-        root: string,
+        root: string
     }),
     disabled: bool,
     onSignIn: func.isRequired,
-    userIsSignedIn: bool,
-}
+    onViewAccount: func.isRequired,
+    userIsSignedIn: bool
+};

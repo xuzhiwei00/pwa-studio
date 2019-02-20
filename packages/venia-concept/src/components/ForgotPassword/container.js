@@ -1,20 +1,20 @@
-import { connect } from "src/drivers"
+import { connect } from 'src/drivers';
 
-import { completePasswordReset, resetPassword } from "src/actions/user"
-import ForgotPassword from "./forgotPassword"
+import { completePasswordReset, resetPassword } from 'src/actions/user';
+import ForgotPassword from './forgotPassword';
 
 const mapStateToProps = ({ user }) => {
-    const { email, isInProgress } = user.forgotPassword
+    const { email, isInProgress } = user.forgotPassword;
 
-    return { email, isInProgress }
-}
+    return { email, isInProgress };
+};
 
 const mapDispatchToProps = {
     completePasswordReset,
     resetPassword
-}
+};
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(ForgotPassword)
+)(ForgotPassword);

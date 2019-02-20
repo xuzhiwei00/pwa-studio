@@ -29,7 +29,11 @@ class ForgotPasswordForm extends Component {
         const { classes, initialValues, onSubmit } = this.props;
 
         return (
-            <Form className={classes.form} initialValues={initialValues} onSubmit={onSubmit}>
+            <Form
+                className={classes.form}
+                initialValues={initialValues}
+                onSubmit={onSubmit}
+            >
                 <Input
                     label="Email Address"
                     autoComplete="email"

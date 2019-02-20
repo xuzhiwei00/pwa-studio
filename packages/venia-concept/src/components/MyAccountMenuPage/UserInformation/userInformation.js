@@ -16,14 +16,14 @@ class UserInformation extends Component {
         user: PropTypes.shape({
             email: PropTypes.string,
             firstname: PropTypes.string,
-            lastname: PropTypes.string,
-            fullname: PropTypes.string
+            lastname: PropTypes.string
         })
     };
 
     render() {
         const { user, classes } = this.props;
-        const { fullname, email } = user || {};
+        const { email, firstname, lastname } = user || {};
+        const fullname = `${firstname} ${lastname}`;
 
         return (
             <div className={classes.root}>
