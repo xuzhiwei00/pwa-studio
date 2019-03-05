@@ -17,7 +17,9 @@ const data = {
                 id: 1
             }
         },
-        description: 'test'
+        description: {
+            html: 'test'
+        }
     }
 };
 

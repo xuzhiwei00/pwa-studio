@@ -8,7 +8,7 @@ class CategoryContent extends Component {
     render() {
         const { classes, pageControl, data, pageSize } = this.props;
         const items = data ? data.category.products.items : null;
-        const title = data ? data.category.description : null;
+        const title = data ? data.category.description.html : null;
         const categoryTitle = data ? data.category.name : null;
 
         return (

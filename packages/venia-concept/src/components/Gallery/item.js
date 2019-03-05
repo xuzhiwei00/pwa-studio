@@ -39,7 +39,7 @@ class GalleryItem extends Component {
         item: shape({
             id: number.isRequired,
             name: string.isRequired,
-            small_image: string.isRequired,
+            small_image: shape({ url: string }),
             url_key: string.isRequired,
             price: shape({
                 regularPrice: shape({
@@ -119,7 +119,7 @@ class GalleryItem extends Component {
         return (
             <img
                 className={classes.image}
-                src={resourceUrl(small_image, {
+                src={resourceUrl(small_image.url, {
                     type: 'image-product',
                     width: imageWidth
                 })}

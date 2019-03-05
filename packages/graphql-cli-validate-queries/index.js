@@ -1,11 +1,6 @@
 const { getGraphQLProjectConfig } = require('graphql-config');
 
 const { request } = require('graphql-request');
-const { getIntrospectionQuery, introspectionQuery } = require('graphql');
-
-const query = getIntrospectionQuery
-    ? getIntrospectionQuery()
-    : introspectionQuery;
 
 module.exports.command = 'validate-queries';
 module.exports.describe =
@@ -63,6 +58,9 @@ module.exports.handler = async (context, argv) => {
                 config.schemaPath
             }". Retrieving from extensions.endpoints.default: ${endpoint}`
         );
+        const query = getIntrospectionQuery
+            ? getIntrospectionQuery()
+            : introspectionQuery;
     }
 };
 

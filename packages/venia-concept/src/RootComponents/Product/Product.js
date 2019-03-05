@@ -42,7 +42,9 @@ class Product extends Component {
                                 file: string.isRequired
                             })
                         ),
-                        description: string,
+                        description: shape({
+                            html: string
+                        }),
                         short_description: string,
                         canonical_url: string
                     })

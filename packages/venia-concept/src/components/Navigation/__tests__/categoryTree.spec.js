@@ -41,7 +41,9 @@ const mocks = [
                             productImagePreview: {
                                 items: [
                                     {
-                                        small_image: 'media/child-1.jpg'
+                                        small_image: {
+                                            url: 'media/child-1.jpg'
+                                        }
                                     }
                                 ]
                             }
@@ -59,7 +61,9 @@ const mocks = [
                             productImagePreview: {
                                 items: [
                                     {
-                                        small_image: 'media/child-2.jpg'
+                                        small_image: {
+                                            url: 'media/child-2.jpg'
+                                        }
                                     }
                                 ]
                             }
@@ -97,7 +101,7 @@ const mocks = [
                             productImagePreview: {
                                 items: [
                                     {
-                                        small_image: 'media/leaf-1.jpg'
+                                        small_image: { url: 'media/leaf-1.jpg' }
                                     }
                                 ]
                             }
@@ -115,7 +119,7 @@ const mocks = [
                             productImagePreview: {
                                 items: [
                                     {
-                                        small_image: 'media/leaf-2.jpg'
+                                        small_image: { url: 'media/leaf-2.jpg' }
                                     }
                                 ]
                             }
@@ -153,7 +157,7 @@ const mocks = [
                             productImagePreview: {
                                 items: [
                                     {
-                                        small_image: 'media/leaf-3.jpg'
+                                        small_image: { url: 'media/leaf-3.jpg' }
                                     }
                                 ]
                             }

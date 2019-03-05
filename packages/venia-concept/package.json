@@ -82,6 +82,7 @@
     "envalid": "~4.1.4",
     "enzyme": "~3.8.0",
     "enzyme-adapter-react-16": "~1.7.1",
+    "graphql-cli": "^3.0.11",
     "identity-obj-proxy": "~3.0.0",
     "node-fetch": "~2.3.0",
     "react-test-renderer": "~16.8.0",

@@ -189,7 +189,11 @@ be configured to have the same effect as 'id'.
                             return {
                                 endpoint,
                                 name,
-                                query
+                                query,
+                                props: {
+                                    variableEditorOpen: true,
+                                    variableEditorHeight: '7rem'
+                                }
                             };
                         })
                     )

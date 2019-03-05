@@ -94,6 +94,11 @@ async function validateQueries(validEnv, log = console.log.bind(console)) {
     const cli = new CLIEngine(linterConfig);
     const files = cli.resolveFileGlobPatterns(['src/**/*.{js,graphql,gql}']);
     const report = cli.executeOnFiles(files);
+    require('fs').writeFileSync(
+        './schema-report-results.json',
+        JSON.stringify(CLIEngine.getErrorResults(report.results), null, 2),
+        'utf8'
+    );
     if (report.errorCount > 0) {
         const formatter = cli.getFormatter();
         throw new Error(`Errors found!

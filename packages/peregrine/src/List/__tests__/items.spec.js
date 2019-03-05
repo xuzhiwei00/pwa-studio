@@ -7,7 +7,7 @@ const items = [
     {
         id: '001',
         name: 'Test Product 1',
-        small_image: '/test/product/1.png',
+        small_image: { url: '/test/product/1.png' },
         price: {
             regularPrice: {
                 amount: {
@@ -19,7 +19,7 @@ const items = [
     {
         id: '002',
         name: 'Test Product 2',
-        small_image: '/test/product/2.png',
+        small_image: { url: '/test/product/2.png' },
         price: {
             regularPrice: {
                 amount: {

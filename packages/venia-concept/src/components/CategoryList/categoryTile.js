@@ -17,7 +17,7 @@ class CategoryTile extends Component {
             productImagePreview: shape({
                 items: arrayOf(
                     shape({
-                        small_image: string
+                        small_image: shape({ url: string })
                     })
                 )
             }),
