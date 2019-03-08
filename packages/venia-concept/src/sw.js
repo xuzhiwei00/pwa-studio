@@ -15,7 +15,7 @@ workbox.routing.registerRoute(
 );
 
 workbox.routing.registerRoute(
-    /\/media\/catalog.*\.(?:png|gif|jpg|jpeg|svg)$/,
+    /\/(?:media\/catalog|img\/resize).*\.(?:png|gif|jpg|jpeg|svg)$/,
     workbox.strategies.staleWhileRevalidate({
         cacheName: 'catalog',
         plugins: [

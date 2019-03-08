@@ -4,14 +4,12 @@ import { bool, func, object, shape, string } from 'prop-types';
 import classify from 'src/classify';
 import Button from 'src/components/Button';
 import CreateAccount from 'src/components/CreateAccount';
-import Icon from 'src/components/Icon';
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up';
-import UserIcon from 'react-feather/dist/icons/user';
 import SignIn from 'src/components/SignIn';
 import ForgotPassword from 'src/components/ForgotPassword';
 import CategoryTree from './categoryTree';
 import NavHeader from './navHeader';
 import defaultClasses from './navigation.css';
+import { MyAccountMenuTrigger } from '../MyAccountMenuPage';
 
 class Navigation extends PureComponent {
     static propTypes = {
@@ -22,26 +20,26 @@ class Navigation extends PureComponent {
             form_open: string,
             footer: string,
             header: string,
-            open: string,
             root: string,
             root_open: string,
             signIn_closed: string,
-            signIn_open: string,
-            title: string,
-            userAvatar: string,
-            userChip: string,
-            userEmail: string,
-            userInfo: string,
-            userMore: string,
-            userName: string
+            signIn_open: string
         }),
+        closeDrawer: func.isRequired,
+        completePasswordReset: func.isRequired,
+        createAccount: func.isRequired,
+        email: string,
         firstname: string,
+        forgotPassword: shape({
+            email: string,
+            isInProgress: bool
+        }),
         getAllCategories: func.isRequired,
         getUserDetails: func.isRequired,
-        email: string,
         isOpen: bool,
         isSignedIn: bool,
         lastname: string,
+        resetPassword: func.isRequired,
         signInError: object
     };
 
@@ -85,27 +83,16 @@ class Navigation extends PureComponent {
     }
 
     get footer() {
-        const { classes, firstname, lastname, email } = this.props;
+        const { classes } = this.props;
 
         return !this.props.isSignedIn ? (
             <div className={classes.authBar}>
-                <Button onClick={this.showSignInForm}>Sign In</Button>
+                <Button priority="high" onClick={this.showSignInForm}>
+                    Sign In
+                </Button>
             </div>
         ) : (
-            <div className={classes.userChip}>
-                <div className={classes.userAvatar}>
-                    <Icon src={UserIcon} />
-                </div>
-                <div className={classes.userInfo}>
-                    <p className={classes.userName}>
-                        {`${firstname} ${lastname}`}
-                    </p>
-                    <p className={classes.userEmail}>{email}</p>
-                </div>
-                <button className={classes.userMore}>
-                    <Icon src={ChevronUpIcon} />
-                </button>
-            </div>
+            <MyAccountMenuTrigger />
         );
     }
 
@@ -158,11 +145,22 @@ class Navigation extends PureComponent {
      */
     setForgotPasswordForm = () => {
         this.forgotPassword = className => {
+            const {
+                completePasswordReset,
+                forgotPassword,
+                resetPassword
+            } = this.props;
+            const { email, isInProgress } = forgotPassword;
+
             return (
                 <div className={className}>
                     <ForgotPassword
+                        completePasswordReset={completePasswordReset}
+                        email={email}
                         initialValues={{ email: this.state.defaultUsername }}
+                        isInProgress={isInProgress}
                         onClose={this.closeForgotPassword}
+                        resetPassword={resetPassword}
                     />
                 </div>
             );

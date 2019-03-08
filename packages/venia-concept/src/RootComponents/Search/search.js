@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
-import { Query } from 'react-apollo';
-import { getSearchParams } from 'src/util/getSearchParams';
+import { Query, Redirect } from 'src/drivers';
 import { bool, func, object, shape, string } from 'prop-types';
 import gql from 'graphql-tag';
 
 import Gallery from 'src/components/Gallery';
 import classify from 'src/classify';
 import Icon from 'src/components/Icon';
+import getQueryParameterValue from 'src/util/getQueryParameterValue';
 import CloseIcon from 'react-feather/dist/icons/x';
 import { loadingIndicator } from 'src/components/LoadingIndicator';
 import defaultClasses from './search.css';
@@ -38,8 +37,13 @@ export class Search extends Component {
 
     componentDidMount() {
         // Ensure that search is open when the user lands on the search page.
-        const { inputText } = getSearchParams(location);
-        const { searchOpen, toggleSearch } = this.props;
+        const { location, searchOpen, toggleSearch } = this.props;
+
+        const inputText = getQueryParameterValue({
+            location,
+            queryParameter: 'query'
+        });
+
         if (toggleSearch && !searchOpen && inputText) {
             toggleSearch();
         }
@@ -75,17 +79,32 @@ export class Search extends Component {
     );
 
     handleClearCategoryFilter = () => {
-        const { inputText } = getSearchParams(location);
-        if (inputText) this.props.executeSearch(inputText, this.props.history);
+        const inputText = getQueryParameterValue({
+            location: this.props.location,
+            queryParameter: 'query'
+        });
+
+        if (inputText) {
+            this.props.executeSearch(inputText, this.props.history);
+        }
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, location } = this.props;
         const { getCategoryName } = this;
 
-        const { inputText, categoryId } = getSearchParams(location);
+        const inputText = getQueryParameterValue({
+            location,
+            queryParameter: 'query'
+        });
+        const categoryId = getQueryParameterValue({
+            location,
+            queryParameter: 'category'
+        });
 
-        if (!inputText) return <Redirect to="/" />;
+        if (!inputText) {
+            return <Redirect to="/" />;
+        }
 
         const queryVariable = categoryId
             ? { inputText, categoryId }

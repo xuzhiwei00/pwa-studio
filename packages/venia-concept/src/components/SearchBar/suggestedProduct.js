@@ -1,21 +1,27 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Price } from '@magento/peregrine';
-import { makeProductMediaPath } from 'src/util/makeMediaPath';
 import classify from 'src/classify';
-import { Link } from 'react-router-dom';
+import { Link, resourceUrl } from 'src/drivers';
 
 import defaultClasses from './suggestedProduct.css';
 
 const productUrlSuffix = '.html';
 
-class suggestedProduct extends Component {
+class SuggestedProduct extends Component {
     static propTypes = {
         handleOnProductOpen: PropTypes.func.isRequired,
         url_key: PropTypes.string.isRequired,
         small_image: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-        price: PropTypes.object.isRequired,
+        price: PropTypes.shape({
+            regularPrice: PropTypes.shape({
+                amount: PropTypes.shape({
+                    currency: PropTypes.string,
+                    value: PropTypes.number
+                })
+            })
+        }).isRequired,
         classes: PropTypes.shape({
             root: PropTypes.string,
             productName: PropTypes.string,
@@ -33,7 +39,7 @@ class suggestedProduct extends Component {
             price
         } = this.props;
 
-        const productLink = `/${url_key}${productUrlSuffix}`;
+        const productLink = resourceUrl(`/${url_key}${productUrlSuffix}`);
 
         return (
             <li className={classes.root}>
@@ -41,7 +47,10 @@ class suggestedProduct extends Component {
                     <img
                         className={classes.productImage}
                         alt={name}
-                        src={makeProductMediaPath(small_image)}
+                        src={resourceUrl(small_image, {
+                            type: 'image-product',
+                            width: 60
+                        })}
                     />
                 </Link>
                 <Link
@@ -62,4 +71,4 @@ class suggestedProduct extends Component {
     }
 }
 
-export default classify(defaultClasses)(suggestedProduct);
+export default classify(defaultClasses)(SuggestedProduct);

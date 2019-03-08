@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Query } from 'react-apollo';
 import debounce from 'lodash.debounce';
+import { Query } from 'src/drivers';
 
 import classify from 'src/classify';
 import { loadingIndicator } from 'src/components/LoadingIndicator';
@@ -23,13 +23,17 @@ class SearchAutocomplete extends Component {
         }),
         searchQuery: PropTypes.string.isRequired,
         autocompleteVisible: PropTypes.bool,
+        executeSearch: PropTypes.func.isRequired,
         updateAutocompleteVisible: PropTypes.func.isRequired
     };
 
-    state = {
-        isQueryUpdating: false,
-        autocompleteQuery: ''
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            isQueryUpdating: false,
+            autocompleteQuery: props.searchQuery || ''
+        };
+    }
 
     componentDidUpdate = prevProps => {
         const { searchQuery } = this.props;
