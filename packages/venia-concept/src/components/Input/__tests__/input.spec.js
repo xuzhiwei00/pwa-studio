@@ -1,6 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import Input from '../input';
+import { Text } from 'informed';
 
 const validInput = {
     value: 'example value',
@@ -31,7 +32,7 @@ test('correctly assigns all props passed to `input` field', () => {
 
     const wrapperProps = wrapper
         .dive()
-        .find('Text')
+        .find(Text)
         .props();
 
     const typeProp = wrapperProps.type;
@@ -72,7 +73,7 @@ test('set `value` state when text is entered into `input`', () => {
         <Input label={validInput.label} field={validInput.field} />
     ).dive();
 
-    wrapper.find('Text').prop('onChange')(event);
+    wrapper.find(Text).prop('onChange')(event);
     expect(wrapper.state().value).toBe(changeValue);
 });
 
@@ -82,6 +83,6 @@ test('set state to `focused` on `Text` focus', () => {
     ).dive();
 
     expect(wrapper.state().focused).toBeFalsy();
-    wrapper.find('Text').simulate('focus');
+    wrapper.find(Text).simulate('focus');
     expect(wrapper.state().focused).toBeTruthy();
 });

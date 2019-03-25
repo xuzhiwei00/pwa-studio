@@ -7,7 +7,7 @@ import Button from 'src/components/Button';
 import ErrorDisplay from 'src/components/ErrorDisplay';
 import Field from 'src/components/Field';
 import TextInput from 'src/components/TextInput';
-import { asyncValidators, validators } from './validators';
+import { validators } from './validators';
 import defaultClasses from './createAccount.css';
 
 class CreateAccount extends Component {
@@ -67,9 +67,7 @@ class CreateAccount extends Component {
                         field="customer.email"
                         autoComplete="email"
                         validate={validators.get('email')}
-                        asyncValidate={asyncValidators.get('email')}
                         validateOnBlur
-                        asyncValidateOnBlur
                     />
                 </Field>
                 <Field label="First Name">

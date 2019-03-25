@@ -1,54 +1,51 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import classify from 'src/classify';
+import React from 'react';
+import { arrayOf, number, shape, string } from 'prop-types';
 import { Link } from 'src/drivers';
-import { List } from '@magento/peregrine';
+
+import { mergeClasses } from 'src/classify';
+import getLocation from './getLocation';
 import defaultClasses from './suggestedCategories.css';
 
-class SuggestedCategories extends Component {
-    static propTypes = {
-        handleCategorySearch: PropTypes.func.isRequired,
-        autocompleteQuery: PropTypes.string.isRequired,
-        classes: PropTypes.shape({
-            root: PropTypes.string,
-            item: PropTypes.string
-        }),
-        categorySuggestions: PropTypes.arrayOf(
-            PropTypes.shape({
-                value_string: PropTypes.string,
-                label: PropTypes.string
-            })
-        ).isRequired
-    };
+const SuggestedCategories = props => {
+    const { categories, limit, value } = props;
+    const classes = mergeClasses(defaultClasses, props.classes);
 
-    render() {
-        const {
-            handleCategorySearch,
-            classes,
-            autocompleteQuery,
-            categorySuggestions
-        } = this.props;
+    const items = categories
+        .slice(0, limit)
+        .map(({ label, value_string: categoryId }) => (
+            <li key={categoryId} className={classes.item}>
+                <Link
+                    className={classes.link}
+                    to={getLocation(value, categoryId)}
+                >
+                    <strong className={classes.value}>{value}</strong>
+                    <span>{` in ${label}`}</span>
+                </Link>
+            </li>
+        ));
 
-        return (
-            <List
-                render="ul"
-                className={classes.root}
-                items={categorySuggestions}
-                getItemKey={item => item.value_string}
-                renderItem={({ item }) => (
-                    <li className={classes.item}>
-                        <Link
-                            onClick={handleCategorySearch}
-                            data-id={item.value_string}
-                            to="/search.html"
-                        >
-                            <strong>{autocompleteQuery}</strong> in {item.label}
-                        </Link>
-                    </li>
-                )}
-            />
-        );
-    }
-}
+    return <ul className={classes.root}>{items}</ul>;
+};
 
-export default classify(defaultClasses)(SuggestedCategories);
+export default SuggestedCategories;
+
+SuggestedCategories.defaultProps = {
+    limit: 4
+};
+
+SuggestedCategories.propTypes = {
+    categories: arrayOf(
+        shape({
+            label: string.isRequired,
+            value_string: string.isRequired
+        })
+    ).isRequired,
+    classes: shape({
+        item: string,
+        link: string,
+        root: string,
+        value: string
+    }),
+    limit: number.isRequired,
+    value: string
+};

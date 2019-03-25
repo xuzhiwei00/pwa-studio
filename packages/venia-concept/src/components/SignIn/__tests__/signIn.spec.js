@@ -1,5 +1,9 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { act } from 'react-test-renderer';
+import { shallow } from 'enzyme';
+import { Form } from 'informed';
+
+import createTestInstance from 'src/util/createTestInstance';
 import SignIn from '../signIn';
 
 const props = {
@@ -57,21 +61,20 @@ test('display error message if there is a `signInError`', () => {
 });
 
 test('calls `onSignIn` when sign in button is pressed', () => {
-    const signInSpy = jest.fn();
-    const wrapper = mount(
-        shallow(
-            <SignIn
-                signIn={signInSpy}
-                classes={classes}
-                onForgotPassword={() => {}}
-            />
-        ).get(0)
+    const signIn = jest.fn();
+    const onForgotPassword = jest.fn();
+
+    const { root } = createTestInstance(
+        <SignIn
+            signIn={signIn}
+            classes={classes}
+            onForgotPassword={onForgotPassword}
+        />
     );
-    const signInForm = wrapper.find('form');
-    signInForm
-        .getElement()
-        .props.onSubmit()
-        .then(() => {
-            expect(signInSpy).toHaveBeenCalled();
-        });
+
+    act(() => {
+        root.findByType(Form).props.onSubmit();
+    });
+
+    expect(signIn).toHaveBeenCalledTimes(1);
 });
