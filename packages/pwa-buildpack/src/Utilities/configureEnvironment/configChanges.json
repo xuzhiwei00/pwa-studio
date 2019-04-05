@@ -1,0 +1,76 @@
+{
+    "MAGENTO_BACKEND_URL": {
+        "type": "defaultChanged",
+        "reason": "Updates to our backend cloud instances",
+        "original": "https://release-dev-rxvv2iq-zddsyhrdimyra.us-4.magentosite.cloud/",
+        "update": "https://release-dev-231-npzdaky-zddsyhrdimyra.us-4.magentosite.cloud/"
+    },
+    "MAGENTO_BUILDPACK_PROVIDE_SECURE_HOST": {
+        "type": "renamed",
+        "update": "DEV_SERVER_CUSTOM_ORIGIN_ENABLED",
+        "supportLegacy": true
+    },
+    "MAGENTO_BUILDPACK_SECURE_HOST_SUBDOMAIN": {
+        "type": "renamed",
+        "update": "DEV_SERVER_CUSTOM_ORIGIN_SUBDOMAIN",
+        "supportLegacy": true
+    },
+    "MAGENTO_BUILDPACK_SECURE_HOST_EXACT_DOMAIN": {
+        "type": "renamed",
+        "update": "DEV_SERVER_CUSTOM_ORIGIN_EXACT_DOMAIN",
+        "supportLegacy": true
+    },
+    "MAGENTO_BUILDPACK_SECURE_HOST_ADD_UNIQUE_HASH": {
+        "type": "renamed",
+        "update": "DEV_SERVER_CUSTOM_ORIGIN_ADD_UNIQUE_HASH",
+        "supportLegacy": true
+    },
+    "ENABLE_SERVICE_WORKER_DEBUGGING": {
+        "type": "renamed",
+        "update": "DEV_SERVER_SERVICE_WORKER_ENABLED",
+        "supportLegacy": true
+    },
+    "BRAINTREE_TOKEN": {
+        "type": "renamed",
+        "update": "CHECKOUT_BRAINTREE_TOKEN",
+        "supportLegacy": true
+    },
+    "MAGENTO_BACKEND_MEDIA_PATH_PRODUCT": {
+        "type": "removed",
+        "reason": "PWA Studio now reads media paths directly from instance configuration."
+    },
+    "MAGENTO_BACKEND_MEDIA_PATH_CATEGORY": {
+        "type": "removed",
+        "reason": "PWA Studio now reads media paths directly from instance configuration."
+    },
+    "PWA_STUDIO_PORTS_DEVELOPMENT": {
+        "type": "renamed",
+        "update": "DEV_SERVER_PORT",
+        "supportLegacy": true
+    },
+    "PWA_STUDIO_HOT_RELOAD_WITH_POLLING": {
+        "type": "renamed",
+        "update": "DEV_SERVER_WATCH_OPTIONS_USE_POLLING",
+        "supportLegacy": true
+    },
+    "IMAGE_SERVICE_PATH": {
+        "type": "renamed",
+        "update": "IMAGE_SERVICE_PUBLIC_PATH",
+        "supportLegacy": true
+    },
+    "IMAGE_CACHE_EXPIRES": {
+        "type": "renamed",
+        "update": "IMAGE_SERVICE_CACHE_EXPIRES",
+        "supportLegacy": true
+    },
+    "IMAGE_CACHE_DEBUG": {
+        "type": "renamed",
+        "update": "IMAGE_SERVICE_CACHE_DEBUG",
+        "supportLegacy": true
+    },
+    "IMAGE_CACHE_REDIS_CLIENT": {
+        "type": "renamed",
+        "update": "IMAGE_SERVICE_CACHE_REDIS_CLIENT",
+        "supportLegacy": true
+    }
+}

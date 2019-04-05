@@ -54,11 +54,9 @@ async function serve() {
             } = require('@magento/pwa-buildpack');
             const { hostname, ports, ssl } = await configureHost({
                 interactive: false,
-                subdomain: validEnv.MAGENTO_BUILDPACK_SECURE_HOST_SUBDOMAIN,
-                exactDomain:
-                    validEnv.MAGENTO_BUILDPACK_SECURE_HOST_EXACT_DOMAIN,
-                addUniqueHash:
-                    validEnv.MAGENTO_BUILDPACK_SECURE_HOST_ADD_UNIQUE_HASH
+                subdomain: validEnv.DEV_SERVER_CUSTOM_ORIGIN_SUBDOMAIN,
+                exactDomain: validEnv.DEV_SERVER_CUSTOM_ORIGIN_EXACT_DOMAIN,
+                addUniqueHash: validEnv.DEV_SERVER_CUSTOM_ORIGIN_EXACT_DOMAIN
             });
             config.host = hostname;
             config.https = ssl;

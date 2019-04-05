@@ -3,23 +3,23 @@ function validateEnvironment(env) {
     const { str, bool, url } = envalid;
 
     const validation = {
-        IMAGE_SERVICE_PATH: str({
+        IMAGE_SERVICE_PUBLIC_PATH: str({
             desc:
                 'Root path to mount the onboard image optimization service in the DevServer and staging server.',
             example: '/img/',
             default: '/img/'
         }),
-        IMAGE_CACHE_EXPIRES: str({
+        IMAGE_SERVICE_CACHE_EXPIRES: str({
             desc:
                 'Lifetime of images in the local cache of resized images. Format is "[length] [unit]", as in "10 minutes" or "1 day".',
             example: '5 minutes',
             default: '1 hour'
         }),
-        IMAGE_CACHE_DEBUG: bool({
+        IMAGE_SERVICE_CACHE_DEBUG: bool({
             desc: 'Log image cache debug info to the console.',
             default: false
         }),
-        IMAGE_CACHE_REDIS_CLIENT: str({
+        IMAGE_SERVICE_CACHE_REDIS_CLIENT: str({
             desc:
                 'To use a Redis instance instead of a local memory cache for persistence between server processes, set this variable to the socket or URL of the Redis instance.',
             default: ''
@@ -30,29 +30,17 @@ function validateEnvironment(env) {
             example: 'sw.js',
             default: 'sw.js'
         }),
-        MAGENTO_BACKEND_MEDIA_PATH_PRODUCT: str({
-            desc:
-                'URL path where the PWA expects Magento to serve product media.',
-            example: '/media/catalog/product',
-            default: '/media/catalog/product'
-        }),
-        MAGENTO_BACKEND_MEDIA_PATH_CATEGORY: str({
-            desc:
-                'URL path where the PWA expects Magento to serve category media.',
-            example: '/media/catalog/category',
-            default: '/media/catalog/category'
-        }),
-        MAGENTO_BUILDPACK_PROVIDE_SECURE_HOST: bool({
+        DEV_SERVER_CUSTOM_ORIGIN_ENABLED: bool({
             desc:
                 'On first run, create a secure, unique hostname and generate a trusted SSL certificate.',
             default: true
         }),
         MAGENTO_BUILDPACK_SECURE_HOST_AND_UNIQUE_HASH: bool({
             desc:
-                'Add a unique hash based on filesystem location to the unique hostname. No effect if MAGENTO_BUILDPACK_PROVIDE_SECURE_HOST is false.',
+                'Add a unique hash based on filesystem location to the unique hostname. No effect if DEV_SERVER_CUSTOM_ORIGIN_ENABLED is false.',
             default: true
         }),
-        ENABLE_SERVICE_WORKER_DEBUGGING: bool({
+        DEV_SERVER_SERVICE_WORKER_ENABLED: bool({
             desc:
                 'Use a service worker in developer mode (PWADevServer), which are disabled in dev mode normally to simplify cache. Good for debugging.',
             default: false
@@ -75,7 +63,7 @@ function validateEnvironment(env) {
     };
     if (process.env.NODE_ENV !== 'production') {
         validation.MAGENTO_BACKEND_URL = url({
-            desc: 'Public base URL of of Magento 2.3 instance.',
+            desc: 'Public base URL of of Magento 2.3.x instance.',
             example: 'https://magento2.vagrant65'
         });
         const { readFileSync } = require('fs');
@@ -110,18 +98,11 @@ function validateEnvironment(env) {
             }
         } catch (e) {
             if (e.code === 'ENOENT') {
-                console.warn(
-                    chalk.redBright(
-                        `\nNo .env file in ${__dirname}\n\tYou may need to copy '.env.dist' to '.env' to begin, or create your own '.env' file manually.`
-                    )
+                throw new Error(
+                    `\nNo .env file in ${__dirname}\n\tYou may need to copy '.env.dist' to '.env' to begin, or create your own '.env' file manually.`
                 );
             } else {
-                console.warn(
-                    chalk.redBright(
-                        `\nCould not retrieve and parse ${envPath}.`,
-                        e
-                    )
-                );
+                throw e;
             }
         }
     }
@@ -130,7 +111,3 @@ function validateEnvironment(env) {
 }
 
 module.exports = validateEnvironment;
-
-if (module === require.main) {
-    validateEnvironment(process.env);
-}

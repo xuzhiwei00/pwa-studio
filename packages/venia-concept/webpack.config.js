@@ -23,32 +23,16 @@ const themePaths = {
 };
 
 const rootComponentsDirs = ['./src/RootComponents/'];
-const libs = [
-    'apollo-cache-inmemory',
-    'apollo-cache-persist',
-    'apollo-client',
-    'apollo-link-context',
-    'apollo-link-http',
-    'informed',
-    'react',
-    'react-apollo',
-    'react-dom',
-    'react-feather',
-    'react-redux',
-    'react-router-dom',
-    'redux',
-    'redux-actions',
-    'redux-thunk'
-];
+const libs = validEnv.BUILD_VENDORED_LIBS.split(',');
 
 module.exports = async function(env) {
     const mode = (env && env.mode) || process.env.NODE_ENV || 'development';
 
     const enableServiceWorkerDebugging =
-        validEnv.ENABLE_SERVICE_WORKER_DEBUGGING;
+        validEnv.DEV_SERVER_SERVICE_WORKER_ENABLED;
 
     const serviceWorkerFileName = validEnv.SERVICE_WORKER_FILE_NAME;
-    const braintreeToken = validEnv.BRAINTREE_TOKEN;
+    const braintreeToken = validEnv.CHECKOUT_BRAINTREE_TOKEN;
 
     const config = {
         mode,
@@ -137,7 +121,7 @@ module.exports = async function(env) {
                             ? serviceWorkerFileName
                             : false
                     ),
-                    BRAINTREE_TOKEN: JSON.stringify(braintreeToken)
+                    CHECKOUT_BRAINTREE_TOKEN: JSON.stringify(braintreeToken)
                 }
             }),
             new ServiceWorkerPlugin({
@@ -197,13 +181,12 @@ module.exports = async function(env) {
                 queryDirs: [path.resolve(themePaths.src, 'queries')]
             }
         };
-        const provideHost = !!validEnv.MAGENTO_BUILDPACK_PROVIDE_SECURE_HOST;
+        const provideHost = !!validEnv.DEV_SERVER_CUSTOM_ORIGIN_ENABLED;
         if (provideHost) {
             devServerConfig.provideSecureHost = {
-                subdomain: validEnv.MAGENTO_BUILDPACK_SECURE_HOST_SUBDOMAIN,
-                exactDomain:
-                    validEnv.MAGENTO_BUILDPACK_SECURE_HOST_EXACT_DOMAIN,
-                addUniqueHash: !!validEnv.MAGENTO_BUILDPACK_SECURE_HOST_ADD_UNIQUE_HASH
+                subdomain: validEnv.DEV_SERVER_CUSTOM_ORIGIN_SUBDOMAIN,
+                exactDomain: validEnv.DEV_SERVER_CUSTOM_ORIGIN_EXACT_DOMAIN,
+                addUniqueHash: !!validEnv.DEV_SERVER_CUSTOM_ORIGIN_EXACT_DOMAIN
             };
         }
         config.devServer = await PWADevServer.configure(devServerConfig);
