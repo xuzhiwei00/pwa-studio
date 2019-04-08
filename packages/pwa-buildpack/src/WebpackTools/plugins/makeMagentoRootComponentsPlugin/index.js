@@ -106,7 +106,7 @@ class MagentoRootComponentsPlugin {
 
                                 // The path string we start with has a single \ which is invalid in Windows.
                                 // Replace it with double backslash.
-                                let normalizedPath = path.replace(
+                                const normalizedPath = path.replace(
                                     /\\/g,
                                     String.raw`\\`
                                 );

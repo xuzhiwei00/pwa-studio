@@ -18,7 +18,7 @@ const { highlight, logger } = require('../Utilities/logging');
 const log = logger();
 
 const secureHostWarning = `To enable all PWA features and avoid ServiceWorker collisions, PWA Studio highly recommends using the ${highlight(
-        '"provideSecureHost"'
+    '"provideSecureHost"'
 )} configuration option of PWADevServer. `;
 
 const helpText = `To autogenerate a unique host based on project name and location on disk, simply add: ${highlight(
@@ -68,13 +68,13 @@ const PWADevServer = {
                 const origin = devServerConfig.publicPath;
                 server.middleware.waitUntilValid(() => {
                     log.ready(`PWADevServer running at ${highlight(origin)}`);
-                if (config.graphqlPlayground) {
+                    if (config.graphqlPlayground) {
                         log.bonus(
                             `GraphQL playground running at ${highlight(
                                 new url.URL('/graphiql', origin).href
                             )}`
                         );
-                }
+                    }
                 });
             },
             before(app) {
@@ -96,8 +96,8 @@ const PWADevServer = {
     )}
   To omit the default ${
       configureHost.DEV_DOMAIN
- } and specify a full alternate domain, use: ${highlight(
-        `provideSecureHost: { exactDomain: "${id}.example.dev" }`
+  } and specify a full alternate domain, use: ${highlight(
+                    `provideSecureHost: { exactDomain: "${id}.example.dev" }`
                 )} (or any other top-level domain).
 
  ${helpText}`);
@@ -133,8 +133,8 @@ const PWADevServer = {
             } else {
                 log.warn(
                     `This project's dev server is configured to run at ${hostname}:${requestedPort}, but port ${requestedPort} is in use. The dev server will run temporarily on port ${highlight(
-                                    devServerConfig.port
-                                )}; you may see inconsistent ServiceWorker behavior.`
+                        devServerConfig.port
+                    )}; you may see inconsistent ServiceWorker behavior.`
                 );
             }
         } else {
