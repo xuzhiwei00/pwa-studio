@@ -11,15 +11,33 @@ const {
 const configureHost = require('../../Utilities/configureHost');
 const { PWADevServer } = require('../');
 
-const fakeEnv = {
-    MAGENTO_BACKEND_URL: 'https://example.com'
+const fakeConfigSection = {
+    customOrigin: jest.fn(() => ({}))
+    // imageService: jest.fn(),
+    // magento: jest.fn()
+};
+const fakeConfig = {
+    section(name) {
+        if (fakeConfigSection.hasOwnProperty(name)) {
+            return fakeConfigSection[name]();
+        }
+        return {};
+    }
 };
 
 portscanner.findAPortNotInUse.mockResolvedValue(10001);
 
-beforeEach(() => playgroundMiddleware.mockReset());
+beforeEach(() => {
+    playgroundMiddleware.mockReset();
+});
 
 const simulate = {
+    customOriginEnabled(enabled) {
+        fakeConfigSection.customOrigin.mockReturnValueOnce({
+            enabled
+        });
+        return simulate;
+    },
     uniqueHostProvided(
         hostname = 'bork.bork.bork',
         port = 8001,
@@ -57,7 +75,7 @@ afterEach(() => {
 test('.configure() returns a configuration object for the `devServer` property of a webpack config', async () => {
     const devServer = await PWADevServer.configure({
         publicPath: 'full/path/to/publicPath',
-        env: fakeEnv
+        projectConfig: fakeConfig
     });
 
     expect(devServer).toMatchObject({
@@ -75,12 +93,14 @@ test('.configure() returns a configuration object for the `devServer` property o
     );
 });
 
-test('.configure() creates a project-unique host if `provideSecureHost` is set', async () => {
-    simulate.uniqueHostProvided().portIsFree();
+test('.configure() creates a project-unique host if customOrigin config set in env', async () => {
+    simulate
+        .uniqueHostProvided()
+        .portIsFree()
+        .customOriginEnabled(true);
     const server = await PWADevServer.configure({
         publicPath: 'bork',
-        provideSecureHost: true,
-        env: fakeEnv
+        projectConfig: fakeConfig
     });
     expect(server).toMatchObject({
         contentBase: false,
@@ -100,11 +120,13 @@ test('.configure() creates a project-unique host if `provideSecureHost` is set',
 });
 
 test('.configure() falls back to an open port if desired port is not available, and warns', async () => {
-    simulate.uniqueHostProvided().portIsInUse();
+    simulate
+        .uniqueHostProvided()
+        .portIsInUse()
+        .customOriginEnabled(true);
     const server = await PWADevServer.configure({
         publicPath: 'bork',
-        provideSecureHost: true,
-        env: fakeEnv
+        projectConfig: fakeConfig
     });
     expect(server).toMatchObject({
         host: 'bork.bork.bork',
@@ -123,81 +145,27 @@ test('.configure() falls back to an open port if desired port is not available, 
     );
 });
 
-test('.configure() is backwards compatible with "id" option, but warns', async () => {
-    simulate.uniqueHostProvided('flappy.bird', 8002).portIsFree();
-    const server = await PWADevServer.configure({
-        publicPath: 'blorch',
-        id: 'flappy',
-        env: fakeEnv
-    });
-    expect(server).toMatchObject({
-        host: 'flappy.bird',
-        port: 8002,
-        https: {
-            key: 'the chickie',
-            cert: 'chop chop',
-            spdy: {
-                protocols: ['http/1.1']
-            }
-        }
-    });
-    expect(configureHost).toHaveBeenCalledWith(
-        expect.objectContaining({
-            subdomain: 'flappy',
-            addUniqueHash: false
-        })
-    );
-    expect(console.warn).toHaveBeenCalledWith(
-        expect.stringMatching(/option\s+is\s+deprecated/m)
-    );
-});
-
 test('.configure() allows customization of provided host', async () => {
     simulate.uniqueHostProvided().portIsFree();
+    fakeConfigSection.customOrigin.mockReturnValueOnce({
+        enabled: true,
+        exactDomain: 'flippy.bird'
+    });
     await PWADevServer.configure({
         publicPath: 'bork',
-        provideSecureHost: {
-            exactDomain: 'flippy.bird'
-        },
-        env: fakeEnv
+        projectConfig: fakeConfig
     });
     expect(configureHost).toHaveBeenCalledWith(
         expect.objectContaining({
             exactDomain: 'flippy.bird'
         })
     );
-});
-
-test('.configure() allows customization of provided host', async () => {
-    simulate.uniqueHostProvided().portIsFree();
-    await PWADevServer.configure({
-        publicPath: 'bork',
-        provideSecureHost: {
-            exactDomain: 'flippy.bird'
-        },
-        env: fakeEnv
-    });
-    expect(configureHost).toHaveBeenCalledWith(
-        expect.objectContaining({
-            exactDomain: 'flippy.bird'
-        })
-    );
-});
-
-test('.configure() errors on bad "provideSecureHost" option', async () => {
-    await expect(
-        PWADevServer.configure({
-            env: fakeEnv,
-            publicPath: '/',
-            provideSecureHost: () => {}
-        })
-    ).rejects.toThrowError('Unrecognized argument');
 });
 
 test('debugErrorMiddleware and notifier attached', async () => {
     const config = {
         publicPath: 'full/path/to/publicPath',
-        env: fakeEnv
+        projectConfig: fakeConfig
     };
 
     const devServer = await PWADevServer.configure(config);
@@ -226,7 +194,7 @@ test('graphql-playground middleware attached', async () => {
     const config = {
         publicPath: 'full/path/to/publicPath',
         graphqlPlayground: true,
-        env: fakeEnv
+        projectConfig: fakeConfig
     };
 
     const middleware = jest.fn();
@@ -271,7 +239,7 @@ test('graphql-playground middleware attached with custom queryDirs', async () =>
         graphqlPlayground: {
             queryDirs: [resolve(__dirname, '__fixtures__/queries')]
         },
-        env: fakeEnv
+        projectConfig: fakeConfig
     };
 
     const middleware = jest.fn();

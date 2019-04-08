@@ -22,7 +22,7 @@ const secureHostWarning = chalk.redBright(`
     highly recommends using the ${chalk.whiteBright(
         '"provideSecureHost"'
     )} configuration
-    option of PWADevServer. 
+    option of PWADevServer.
 `);
 
 const helpText = `
@@ -37,12 +37,19 @@ const helpText = `
 const PWADevServer = {
     validateConfig: optionsValidator('PWADevServer', {
         publicPath: 'string',
-        env: 'object'
+        projectConfig: 'object'
     }),
     async configure(config) {
         debug('configure() invoked', config);
         PWADevServer.validateConfig('.configure(config)', config);
+
+        const { projectConfig } = config;
+
+        const devServerEnvVars = projectConfig.section('devServer');
+
         const devServerConfig = {
+            // TODO: Incorporate docker-specific env vars like this one into
+            // new configureEnvironment system.
             public: process.env.PWA_STUDIO_PUBLIC_PATH || '',
             contentBase: false, // UpwardPlugin serves static files
             compress: true,
@@ -50,13 +57,11 @@ const PWADevServer = {
             watchOptions: {
                 // polling is CPU intensive - provide the option to turn it on if needed
                 poll:
-                    !!parseInt(
-                        process.env.PWA_STUDIO_HOT_RELOAD_WITH_POLLING
-                    ) || false
+                    !!parseInt(devServerEnvVars.watchOptionsUsePolling) || false
             },
             host: '0.0.0.0',
             port:
-                process.env.PWA_STUDIO_PORTS_DEVELOPMENT ||
+                devServerEnvVars.port ||
                 (await portscanner.findAPortNotInUse(10000)),
             stats: {
                 all: !process.env.NODE_DEBUG ? false : undefined,
@@ -101,79 +106,54 @@ const PWADevServer = {
                 );
             },
             before(app) {
-                addImgOptMiddleware(app, config.env);
+                addImgOptMiddleware(app, {
+                    ...projectConfig.section('imageService'),
+                    backendUrl: projectConfig.section('magento').backendUrl
+                });
             }
         };
-        const { id, provideSecureHost } = config;
-        if (id || provideSecureHost) {
-            const hostConf = {};
-            // backwards compatibility
-            if (id) {
-                const desiredDomain = id + '.' + configureHost.DEV_DOMAIN;
-                console.warn(
-                    debug.errorMsg(
-                        chalk.yellowBright(`
-The 'id' configuration option is deprecated and will be removed in upcoming
-releases. It has been replaced by 'provideSecureHost' configuration which can
-be configured to have the same effect as 'id'.
-
-  To create the subdomain ${desiredDomain}, use:
-    ${chalk.whiteBright(
-        `provideSecureHost: { subdomain: "${id}", addUniqueHash: false }`
-    )}
-
-  To omit the default ${
-      configureHost.DEV_DOMAIN
-  } and specify a full alternate domain, use:
-    ${chalk.whiteBright(
-        `provideSecureHost: { exactDomain: "${id}.example.dev" }`
-    )}
-  (or any other top-level domain).
-
-  ${helpText}`)
-                    )
-                );
-
-                hostConf.addUniqueHash = false;
-                hostConf.subdomain = id;
-            } else if (provideSecureHost === true) {
-                hostConf.addUniqueHash = true;
-            } else if (typeof provideSecureHost === 'object') {
-                Object.assign(hostConf, provideSecureHost);
-            } else {
-                throw new Error(
-                    debug.errorMsg(
-                        `Unrecognized argument to 'provideSecureHost'. Must be a boolean or an object with 'addUniqueHash', 'subdomain', and/or 'domain' properties.`
-                    )
-                );
-            }
-            const { hostname, ports, ssl } = await configureHost(hostConf);
-
-            devServerConfig.host = hostname;
-            devServerConfig.https = ssl;
-            // workaround for https://github.com/webpack/webpack-dev-server/issues/1491
-            devServerConfig.https.spdy = {
-                protocols: ['http/1.1']
-            };
-
-            const requestedPort =
-                process.env.PWA_STUDIO_PORTS_DEVELOPMENT || ports.development;
-            if (
-                (await portscanner.checkPortStatus(requestedPort)) === 'closed'
-            ) {
-                devServerConfig.port = requestedPort;
-            } else {
+        const customOriginConfig = projectConfig.section('customOrigin');
+        if (customOriginConfig.enabled) {
+            const customOrigin = await configureHost(
+                Object.assign(customOriginConfig, {
+                    interactive: false
+                })
+            );
+            if (!customOrigin) {
                 console.warn(
                     chalk.yellowBright(
-                        '\n' +
-                            debug.errorMsg(
-                                `This project's dev server is configured to run at ${hostname}:${requestedPort}, but port ${requestedPort} is in use. The dev server will run temporarily on port ${chalk.underline.whiteBright(
-                                    devServerConfig.port
-                                )}; you may see inconsistent ServiceWorker behavior.`
-                            ) +
-                            '\n'
+                        'Custom origins are enabled for this project, but one has not yet been set up. Run `npx @magento/pwa-buildpack init-custom-origin <projectRoot>` to initialize a custom origin.'
                     )
                 );
+            } else {
+                const { hostname, ssl, ports } = customOrigin;
+                devServerConfig.host = hostname;
+                devServerConfig.https = ssl;
+                // workaround for https://github.com/webpack/webpack-dev-server/issues/1491
+                devServerConfig.https.spdy = {
+                    protocols: ['http/1.1']
+                };
+
+                const requestedPort =
+                    devServerEnvVars.port || ports.development;
+                if (
+                    (await portscanner.checkPortStatus(requestedPort)) ===
+                    'closed'
+                ) {
+                    devServerConfig.port = requestedPort;
+                } else {
+                    console.warn(
+                        chalk.yellowBright(
+                            '\n' +
+                                debug.errorMsg(
+                                    `This project's dev server is configured to run at ${hostname}:${requestedPort}, but port ${requestedPort} is in use. The dev server will run temporarily on port ${chalk.underline.whiteBright(
+                                        devServerConfig.port
+                                    )}; you may see inconsistent ServiceWorker behavior.`
+                                ) +
+                                '\n'
+                        )
+                    );
+                }
             }
         } else {
             console.warn(secureHostWarning + helpText);
@@ -181,7 +161,7 @@ be configured to have the same effect as 'id'.
 
         const { graphqlPlayground } = config;
         if (graphqlPlayground) {
-            const { queryDirs = [] } = config.graphqlPlayground;
+            const { queryDirs = [] } = graphqlPlayground;
             const endpoint = '/graphql';
 
             const queryDirListings = await Promise.all(

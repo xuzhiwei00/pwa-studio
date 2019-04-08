@@ -13,7 +13,7 @@
     "venia": "./bin/venia.js"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run build:esm && yarn run validate-queries && yarn run build:prod",
+    "build": "yarn run clean && buildpack validate-env . && yarn run build:esm && yarn run validate-queries && yarn run build:prod",
     "build:analyze": "yarn run clean && mkdir dist && yarn run validate-queries && yarn run build:stats",
     "build:dev": "echo 'Skipping venia-concept build...'",
     "build:esm": "BABEL_ENV=development babel src --out-dir esm --root-mode 'upward' --source-maps --copy-files",
@@ -84,16 +84,13 @@
     "babel-plugin-graphql-tag": "~2.0.0",
     "chalk": "~2.4.2",
     "dotenv": "~6.2.0",
-    "envalid": "~4.2.2",
     "enzyme": "~3.9.0",
     "enzyme-adapter-react-16": "~1.9.1",
     "identity-obj-proxy": "~3.0.0",
     "node-fetch": "~2.3.0",
     "react-test-renderer": "~16.8.3",
     "rimraf": "~2.6.3",
-    "terser-webpack-plugin": "~1.2.3",
     "webpack": "~4.29.5",
-    "webpack-assets-manifest": "~3.1.1",
     "webpack-bundle-analyzer": "~3.0.4",
     "webpack-cli": "~3.2.3",
     "webpack-dev-server": "~3.2.1"

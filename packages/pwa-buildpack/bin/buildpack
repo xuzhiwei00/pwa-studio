@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+require('yargs')
+    .commandDir('../dist/cli')
+    .demandCommand()
+    .help()
+    .argv;
