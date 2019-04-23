@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { number, shape, string } from 'prop-types';
+import { func, number, shape, string } from 'prop-types';
 import { Price } from '@magento/peregrine';
 import classify from 'src/classify';
 import { Link, resourceUrl } from 'src/drivers';
@@ -13,6 +13,7 @@ class SuggestedProduct extends Component {
         url_key: string.isRequired,
         small_image: string.isRequired,
         name: string.isRequired,
+        onNavigate: func,
         price: shape({
             regularPrice: shape({
                 amount: shape({
@@ -29,13 +30,22 @@ class SuggestedProduct extends Component {
         })
     };
 
+    handleClick = () => {
+        const { onNavigate } = this.props;
+
+        if (typeof onNavigate === 'function') {
+            onNavigate();
+        }
+    };
+
     render() {
-        const { classes, url_key, small_image, name, price } = this.props;
+        const { handleClick, props } = this;
+        const { classes, url_key, small_image, name, price } = props;
 
         const uri = resourceUrl(`/${url_key}${productUrlSuffix}`);
 
         return (
-            <Link className={classes.root} to={uri}>
+            <Link className={classes.root} to={uri} onClick={handleClick}>
                 <span className={classes.image}>
                     <img
                         alt={name}

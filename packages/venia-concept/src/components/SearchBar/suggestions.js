@@ -1,4 +1,5 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useCallback } from 'react';
+import { arrayOf, bool, func, shape, string } from 'prop-types';
 
 import { mergeClasses } from 'src/classify';
 import SuggestedCategories from './suggestedCategories';
@@ -6,9 +7,13 @@ import SuggestedProducts from './suggestedProducts';
 import defaultClasses from './suggestions.css';
 
 const Suggestions = props => {
-    const { products, searchValue, visible } = props;
+    const { products, searchValue, setVisible, visible } = props;
     const { filters, items } = products;
     const classes = mergeClasses(defaultClasses, props.classes);
+
+    const onNavigate = useCallback(() => {
+        setVisible(false);
+    }, [setVisible]);
 
     if (!visible || !filters || !items) {
         return null;
@@ -20,13 +25,27 @@ const Suggestions = props => {
 
     return (
         <Fragment>
-            <SuggestedCategories categories={categories} value={searchValue} />
+            <SuggestedCategories
+                categories={categories}
+                onNavigate={onNavigate}
+                value={searchValue}
+            />
             <h2 className={classes.heading}>
                 <span>{'Product Suggestions'}</span>
             </h2>
-            <SuggestedProducts products={items} />
+            <SuggestedProducts onNavigate={onNavigate} products={items} />
         </Fragment>
     );
 };
 
 export default Suggestions;
+
+Suggestions.propTypes = {
+    classes: shape({
+        heading: string
+    }),
+    products: arrayOf(shape({})),
+    searchValue: string,
+    setVisible: func,
+    visible: bool
+};

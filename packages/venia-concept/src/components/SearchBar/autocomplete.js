@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { bool, shape, string } from 'prop-types';
+import { bool, func, shape, string } from 'prop-types';
 import debounce from 'lodash.debounce';
 import { useFieldState } from 'informed';
 import { useApolloContext, useQueryResult } from '@magento/peregrine';
@@ -12,7 +12,7 @@ import defaultClasses from './autocomplete.css';
 const debounceTimeout = 200;
 
 const Autocomplete = props => {
-    const { visible } = props;
+    const { setVisible, visible } = props;
     const { data, dispatch, error, loading } = useQueryResult();
     const client = useApolloContext();
     const { value } = useFieldState('search_query');
@@ -74,6 +74,7 @@ const Autocomplete = props => {
                 <Suggestions
                     products={data ? data.products : {}}
                     searchValue={value}
+                    setVisible={setVisible}
                     visible={visible}
                 />
             </div>
@@ -90,5 +91,6 @@ Autocomplete.propTypes = {
         root_visible: string,
         suggestions: string
     }),
+    setVisible: func,
     visible: bool
 };
