@@ -38,19 +38,27 @@ module.exports = function printEnvFile(env = process.env, log = prettyLogger) {
     for (const section of sections) {
         contents += '\n' + startSection(section.name, 4) + blankline;
         for (const variable of section.variables) {
+            const isSet = currentEnv.hasOwnProperty(variable.name);
+            const currentValue = isSet ? currentEnv[variable.name] : '';
+            const hasDefault = variable.hasOwnProperty('default');
+            const isSetCustom = isSet && currentValue !== variable.default;
+            const isUnsetButRequired = !isSet && !hasDefault;
+            const shouldSetInEnv = isSetCustom || isUnsetButRequired;
+
             contents += graf(variable.desc);
+
             if (variable.example) {
                 contents += graf(`- Example: ${variable.example}`);
             }
-            if (variable.default) {
+            if (hasDefault) {
                 contents += graf(`- Default when not set: ${variable.default}`);
             }
-            if (
-                currentEnv.hasOwnProperty(variable.name) &&
-                currentEnv[variable.name] !== variable.default
-            ) {
-                contents += `${variable.name}=${currentEnv[variable.name]}\n`;
+            if (shouldSetInEnv) {
+                contents += `${variable.name}=${currentValue}\n`;
             } else {
+                // Print this line as an example of how to set the variable, but
+                // comment it out so that future versions can inherit changed
+                // default settings.
                 contents += `#${variable.name}=${variable.default || ''}\n`;
             }
             contents += blankline;

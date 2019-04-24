@@ -1,6 +1,7 @@
 const debug = require('../util/debug').makeFileLogger(__filename);
 const { inspect } = require('util');
 const path = require('path');
+const chalk = require('chalk');
 const dotenv = require('dotenv');
 const envalid = require('envalid');
 const camelspace = require('camelspace');
