@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { bool, func, shape, string } from 'prop-types';
-import debounce from 'lodash.debounce';
 import { useFieldState } from 'informed';
 import { useQuery } from '@magento/peregrine';
 
@@ -9,21 +8,20 @@ import PRODUCT_SEARCH from 'src/queries/productSearch.graphql';
 import Suggestions from './suggestions';
 import defaultClasses from './autocomplete.css';
 
-const DEBOUNCE_TIMEOUT = 200;
+const DEBOUNCE_WAIT = 200;
 
 const Autocomplete = props => {
     const { setVisible, visible } = props;
 
-    const [queryResult, queryApi] = useQuery(PRODUCT_SEARCH);
+    const [queryResult, queryApi] = useQuery(PRODUCT_SEARCH, DEBOUNCE_WAIT);
     const { data, error, loading } = queryResult;
-    const { resetState, setLoading } = queryApi;
+    const { resetState, runQuery, setLoading } = queryApi;
 
     const { value } = useFieldState('search_query');
+    const valid = value && value.length > 2;
 
     const classes = mergeClasses(defaultClasses, props.classes);
     const rootClassName = visible ? classes.root_visible : classes.root_hidden;
-
-    const valid = value && value.length > 2;
     let message = '';
 
     if (error) {
@@ -38,20 +36,11 @@ const Autocomplete = props => {
         message = `${data.products.items.length} items`;
     }
 
-    const runQuery = useCallback(
-        debounce(inputText => {
-            queryApi.runQuery({
-                query: PRODUCT_SEARCH,
-                variables: { inputText }
-            });
-        }, DEBOUNCE_TIMEOUT),
-        [PRODUCT_SEARCH, queryApi.runQuery]
-    );
-
+    // run the query once on mount, and again whenever state changes
     useEffect(() => {
         if (visible && valid) {
             setLoading(true);
-            runQuery(value);
+            runQuery({ variables: { inputText: value } });
         } else if (!value) {
             resetState();
         }

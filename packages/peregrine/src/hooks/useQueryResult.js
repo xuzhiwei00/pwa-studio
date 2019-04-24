@@ -88,6 +88,7 @@ export const useQueryResult = () => {
         [dispatch]
     );
 
+    // this object should never change
     const api = useMemo(
         () => ({
             dispatch,
