@@ -7,30 +7,40 @@ import createTestInstance from '../../util/createTestInstance';
 const log = jest.fn();
 
 const Component = () => {
-    const hookProps = useQueryResult();
+    const hookOutput = useQueryResult();
 
-    log(hookProps);
+    log(...hookOutput);
 
     return <i />;
 };
 
-test('returns state and a `dispatch` function', () => {
+test('returns query state and api', () => {
     createTestInstance(<Component />);
 
     expect(log).toHaveBeenCalledTimes(1);
-    expect(log).toHaveBeenNthCalledWith(1, {
-        data: null,
-        dispatch: expect.any(Function),
-        error: null,
-        loading: false
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        1,
+        {
+            data: null,
+            error: null,
+            loading: false
+        },
+        {
+            dispatch: expect.any(Function),
+            resetState: expect.any(Function),
+            receiveResponse: expect.any(Function),
+            setData: expect.any(Function),
+            setError: expect.any(Function),
+            setLoading: expect.any(Function)
+        }
+    );
 });
 
 test('handles `set data` action', () => {
     createTestInstance(<Component />);
 
     const payload = {};
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({
@@ -40,19 +50,24 @@ test('handles `set data` action', () => {
     });
 
     expect(log).toHaveBeenCalledTimes(2);
-    expect(log).toHaveBeenNthCalledWith(2, {
-        data: payload,
-        dispatch,
-        error: null,
-        loading: false
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        2,
+        {
+            data: payload,
+            error: null,
+            loading: false
+        },
+        expect.objectContaining({
+            dispatch
+        })
+    );
 });
 
 test('handles `set error` action', () => {
     createTestInstance(<Component />);
 
     const payload = new Error('foo');
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({
@@ -62,18 +77,23 @@ test('handles `set error` action', () => {
     });
 
     expect(log).toHaveBeenCalledTimes(2);
-    expect(log).toHaveBeenNthCalledWith(2, {
-        data: null,
-        dispatch,
-        error: payload,
-        loading: false
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        2,
+        {
+            data: null,
+            error: payload,
+            loading: false
+        },
+        expect.objectContaining({
+            dispatch
+        })
+    );
 });
 
 test('handles `set loading` action', () => {
     createTestInstance(<Component />);
 
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({
@@ -83,12 +103,17 @@ test('handles `set loading` action', () => {
     });
 
     expect(log).toHaveBeenCalledTimes(2);
-    expect(log).toHaveBeenNthCalledWith(2, {
-        data: null,
-        dispatch,
-        error: null,
-        loading: true
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        2,
+        {
+            data: null,
+            error: null,
+            loading: true
+        },
+        expect.objectContaining({
+            dispatch
+        })
+    );
 });
 
 test('handles `receive response` action with data', () => {
@@ -96,7 +121,7 @@ test('handles `receive response` action with data', () => {
 
     const data = {};
     const payload = { data };
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({
@@ -106,12 +131,17 @@ test('handles `receive response` action with data', () => {
     });
 
     expect(log).toHaveBeenCalledTimes(2);
-    expect(log).toHaveBeenNthCalledWith(2, {
-        data,
-        dispatch,
-        error: null,
-        loading: false
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        2,
+        {
+            data,
+            error: null,
+            loading: false
+        },
+        expect.objectContaining({
+            dispatch
+        })
+    );
 });
 
 test('handles `receive response` action with error', () => {
@@ -119,7 +149,7 @@ test('handles `receive response` action with error', () => {
 
     const error = new Error('foo');
     const payload = { error };
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({
@@ -129,18 +159,23 @@ test('handles `receive response` action with error', () => {
     });
 
     expect(log).toHaveBeenCalledTimes(2);
-    expect(log).toHaveBeenNthCalledWith(2, {
-        data: null,
-        dispatch,
-        error,
-        loading: false
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        2,
+        {
+            data: null,
+            error,
+            loading: false
+        },
+        expect.objectContaining({
+            dispatch
+        })
+    );
 });
 
 test('handles `reset state` action', () => {
     createTestInstance(<Component />);
 
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({
@@ -170,18 +205,23 @@ test('handles `reset state` action', () => {
     });
 
     expect(log).toHaveBeenCalledTimes(5);
-    expect(log).toHaveBeenNthCalledWith(5, {
-        data: null,
-        dispatch,
-        error: null,
-        loading: false
-    });
+    expect(log).toHaveBeenNthCalledWith(
+        5,
+        {
+            data: null,
+            error: null,
+            loading: false
+        },
+        expect.objectContaining({
+            dispatch
+        })
+    );
 });
 
 test('handles an unexpected action as a noop', () => {
     createTestInstance(<Component />);
 
-    const { dispatch } = log.mock.calls[0][0];
+    const { dispatch } = log.mock.calls[0][1];
 
     act(() => {
         dispatch({

@@ -16,6 +16,7 @@ const Util = { BrowserPersistence };
 const useApolloContext = jest.fn(peregrine.useApolloContext);
 const useDocumentListener = jest.fn(peregrine.useDocumentListener);
 const useDropdown = jest.fn(peregrine.useDropdown);
+const useQuery = jest.fn(peregrine.useQuery);
 const useQueryResult = jest.fn(peregrine.useQueryResult);
 const useValueFromSearchParams = jest.fn(peregrine.useValueFromSearchParams);
 
@@ -36,6 +37,7 @@ module.exports = {
     useApolloContext,
     useDocumentListener,
     useDropdown,
+    useQuery,
     useQueryResult,
     useValueFromSearchParams
 };

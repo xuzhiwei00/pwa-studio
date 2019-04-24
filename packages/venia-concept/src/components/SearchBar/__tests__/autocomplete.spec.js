@@ -1,8 +1,7 @@
 import React from 'react';
 import { Form, Text } from 'informed';
 import { act } from 'react-test-renderer';
-import waitForExpect from 'wait-for-expect';
-import { useApolloContext, useQueryResult } from '@magento/peregrine';
+import { useQuery } from '@magento/peregrine';
 
 import createTestInstance from 'src/util/createTestInstance';
 import Autocomplete from '../autocomplete';
@@ -12,19 +11,23 @@ jest.mock('@magento/peregrine');
 jest.mock('../suggestions', () => () => null);
 jest.doMock('react-apollo/ApolloContext', () => React.createContext());
 
-const dispatch = jest.fn();
-const query = jest.fn(async () => ({}));
+const resetState = jest.fn();
+const runQuery = jest.fn();
+const setLoading = jest.fn();
+runQuery.cancel = jest.fn();
 
-useApolloContext.mockImplementation(() => ({
-    query
-}));
-
-useQueryResult.mockImplementation(() => ({
+const queryState = {
     data: null,
-    dispatch,
     error: null,
     loading: false
-}));
+};
+const queryApi = {
+    resetState,
+    runQuery,
+    setLoading
+};
+
+useQuery.mockImplementation(() => [queryState, queryApi]);
 
 test('renders correctly', () => {
     const { root } = createTestInstance(
@@ -45,10 +48,7 @@ test('resets query state if not visible', () => {
         </Form>
     );
 
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(dispatch).toHaveBeenLastCalledWith({
-        type: 'reset state'
-    });
+    expect(resetState).toHaveBeenCalledTimes(1);
 });
 
 test('resets query state if input is invalid', () => {
@@ -58,13 +58,10 @@ test('resets query state if input is invalid', () => {
         </Form>
     );
 
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(dispatch).toHaveBeenLastCalledWith({
-        type: 'reset state'
-    });
+    expect(resetState).toHaveBeenCalledTimes(1);
 });
 
-test('sets loading, runs query, receives response', async () => {
+test('sets loading, then runs query', () => {
     let formApi;
 
     createTestInstance(
@@ -88,35 +85,17 @@ test('sets loading, runs query, receives response', async () => {
         formApi.setValue('search_query', 'abc');
     });
 
-    expect(dispatch).toHaveBeenCalledTimes(3);
-    expect(dispatch).toHaveBeenNthCalledWith(1, {
-        type: 'reset state'
-    });
-    expect(dispatch).toHaveBeenNthCalledWith(2, {
-        type: 'reset state'
-    });
-    expect(dispatch).toHaveBeenNthCalledWith(3, {
-        payload: true,
-        type: 'set loading'
-    });
-
-    await waitForExpect(() => {
-        expect(query).toHaveBeenCalledTimes(1);
-        expect(query).toHaveBeenNthCalledWith(
-            1,
-            expect.objectContaining({
-                variables: {
-                    inputText: 'abc'
-                }
-            })
-        );
-
-        expect(dispatch).toHaveBeenCalledTimes(4);
-        expect(dispatch).toHaveBeenNthCalledWith(4, {
-            payload: {},
-            type: 'receive response'
-        });
-    });
+    expect(resetState).toHaveBeenCalledTimes(2);
+    expect(setLoading).toHaveBeenCalledTimes(1);
+    expect(runQuery).toHaveBeenCalledTimes(1);
+    expect(runQuery).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+            variables: {
+                inputText: 'abc'
+            }
+        })
+    );
 });
 
 test('renders a hint message', () => {
@@ -132,12 +111,10 @@ test('renders a hint message', () => {
 });
 
 test('renders an error message', () => {
-    useQueryResult.mockReturnValueOnce({
-        data: null,
-        dispatch,
-        error: new Error('error'),
-        loading: false
-    });
+    useQuery.mockReturnValueOnce([
+        { data: null, error: new Error('error'), loading: false },
+        queryApi
+    ]);
 
     const { root } = createTestInstance(
         <Form>
@@ -151,12 +128,10 @@ test('renders an error message', () => {
 });
 
 test('renders a loading message', () => {
-    useQueryResult.mockReturnValueOnce({
-        data: null,
-        dispatch,
-        error: null,
-        loading: true
-    });
+    useQuery.mockReturnValueOnce([
+        { data: null, error: null, loading: true },
+        queryApi
+    ]);
 
     const { root } = createTestInstance(
         <Form>
@@ -170,16 +145,11 @@ test('renders a loading message', () => {
 });
 
 test('renders an empty-set message', () => {
-    useQueryResult.mockReturnValueOnce({
-        data: {
-            products: {
-                items: []
-            }
-        },
-        dispatch,
-        error: null,
-        loading: false
-    });
+    const data = { products: { filters: [], items: [] } };
+    useQuery.mockReturnValueOnce([
+        { data, error: null, loading: false },
+        queryApi
+    ]);
 
     const { root } = createTestInstance(
         <Form>
@@ -193,16 +163,11 @@ test('renders an empty-set message', () => {
 });
 
 test('renders a summary message', () => {
-    useQueryResult.mockReturnValueOnce({
-        data: {
-            products: {
-                items: { length: 1 }
-            }
-        },
-        dispatch,
-        error: null,
-        loading: false
-    });
+    const data = { products: { filters: [], items: { length: 1 } } };
+    useQuery.mockReturnValueOnce([
+        { data, error: null, loading: false },
+        queryApi
+    ]);
 
     const { root } = createTestInstance(
         <Form>
