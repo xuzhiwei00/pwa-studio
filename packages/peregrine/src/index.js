@@ -5,6 +5,7 @@ import * as Util from './util';
 export { useApolloContext } from './hooks/useApolloContext';
 export { useDocumentListener } from './hooks/useDocumentListener';
 export { useDropdown } from './hooks/useDropdown';
+export { useQuery } from './hooks/useQuery';
 export { useQueryResult } from './hooks/useQueryResult';
 export { useValueFromSearchParams } from './hooks/useValueFromSearchParams';
 

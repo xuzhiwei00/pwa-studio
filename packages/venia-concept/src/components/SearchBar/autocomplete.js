@@ -2,22 +2,27 @@ import React, { useCallback, useEffect } from 'react';
 import { bool, func, shape, string } from 'prop-types';
 import debounce from 'lodash.debounce';
 import { useFieldState } from 'informed';
-import { useApolloContext, useQueryResult } from '@magento/peregrine';
+import { useQuery } from '@magento/peregrine';
 
 import { mergeClasses } from 'src/classify';
 import PRODUCT_SEARCH from 'src/queries/productSearch.graphql';
 import Suggestions from './suggestions';
 import defaultClasses from './autocomplete.css';
 
-const debounceTimeout = 200;
+const DEBOUNCE_TIMEOUT = 200;
 
 const Autocomplete = props => {
     const { setVisible, visible } = props;
-    const { data, dispatch, error, loading } = useQueryResult();
-    const client = useApolloContext();
+
+    const [queryResult, queryApi] = useQuery(PRODUCT_SEARCH);
+    const { data, error, loading } = queryResult;
+    const { resetState, setLoading } = queryApi;
+
     const { value } = useFieldState('search_query');
+
     const classes = mergeClasses(defaultClasses, props.classes);
     const rootClassName = visible ? classes.root_visible : classes.root_hidden;
+
     const valid = value && value.length > 2;
     let message = '';
 
@@ -35,37 +40,26 @@ const Autocomplete = props => {
 
     const runQuery = useCallback(
         debounce(inputText => {
-            client
-                .query({
-                    query: PRODUCT_SEARCH,
-                    variables: { inputText }
-                })
-                .then(payload => {
-                    dispatch({
-                        payload,
-                        type: 'receive response'
-                    });
-                });
-        }, debounceTimeout),
-        []
+            queryApi.runQuery({
+                query: PRODUCT_SEARCH,
+                variables: { inputText }
+            });
+        }, DEBOUNCE_TIMEOUT),
+        [PRODUCT_SEARCH, queryApi.runQuery]
     );
 
     useEffect(() => {
         if (visible && valid) {
-            dispatch({
-                payload: true,
-                type: 'set loading'
-            });
-
+            setLoading(true);
             runQuery(value);
         } else if (!value) {
-            dispatch({ type: 'reset state' });
+            resetState();
         }
 
         return () => {
             runQuery.cancel();
         };
-    }, [valid, value, visible]);
+    }, [resetState, runQuery, setLoading, valid, value, visible]);
 
     return (
         <div className={rootClassName}>

@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useCallback, useMemo, useReducer } from 'react';
 
 const initialState = {
     data: null,
@@ -38,5 +38,67 @@ const reducer = (state, { payload, type }) => {
 export const useQueryResult = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    return { ...state, dispatch };
+    const setData = useCallback(
+        payload => {
+            dispatch({
+                payload,
+                type: 'set data'
+            });
+        },
+        [dispatch]
+    );
+
+    const setError = useCallback(
+        payload => {
+            dispatch({
+                payload,
+                type: 'set error'
+            });
+        },
+        [dispatch]
+    );
+
+    const setLoading = useCallback(
+        payload => {
+            dispatch({
+                payload,
+                type: 'set loading'
+            });
+        },
+        [dispatch]
+    );
+
+    const receiveResponse = useCallback(
+        payload => {
+            dispatch({
+                payload,
+                type: 'receive response'
+            });
+        },
+        [dispatch]
+    );
+
+    const resetState = useCallback(
+        payload => {
+            dispatch({
+                payload,
+                type: 'reset state'
+            });
+        },
+        [dispatch]
+    );
+
+    const api = useMemo(
+        () => ({
+            dispatch,
+            receiveResponse,
+            resetState,
+            setData,
+            setError,
+            setLoading
+        }),
+        [dispatch, receiveResponse, resetState, setData, setError, setLoading]
+    );
+
+    return [state, api];
 };

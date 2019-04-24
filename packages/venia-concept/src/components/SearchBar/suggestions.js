@@ -44,7 +44,15 @@ Suggestions.propTypes = {
     classes: shape({
         heading: string
     }),
-    products: arrayOf(shape({})),
+    products: shape({
+        filters: arrayOf(
+            shape({
+                filter_items: arrayOf(shape({})),
+                name: string.isRequired
+            }).isRequired
+        ),
+        items: arrayOf(shape({}))
+    }),
     searchValue: string,
     setVisible: func,
     visible: bool
