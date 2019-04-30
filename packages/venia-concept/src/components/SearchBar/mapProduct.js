@@ -1,6 +1,8 @@
 /*
  * Map Magento 2.3.1 schema changes to Venia 2.0.0 proptype shape
  * to maintain backwards compatibility.
+ *
+ * TODO: deprecate and remove
  */
 
 export default product => {

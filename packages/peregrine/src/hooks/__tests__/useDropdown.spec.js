@@ -50,6 +50,10 @@ test('`setExpanded` updates `expanded`', () => {
 });
 
 test('collapses on mousedown outside `elementRef`', () => {
+    // mock the DOM API `Node.contains()` to return false
+    // this simulates an event originating *outside* the target
+    // https://developer.mozilla.org/en-US/docs/Web/API/Node/contains
+    // https://reactjs.org/docs/test-renderer.html#ideas
     const contains = jest.fn(() => false);
     const createNodeMock = () => ({ contains });
 
@@ -76,6 +80,8 @@ test('collapses on mousedown outside `elementRef`', () => {
 });
 
 test("doesn't collapse on mousedown inside `elementRef`", () => {
+    // mock the DOM API `Node.contains()` to return true
+    // this simulates an event originating *inside* the target
     const contains = jest.fn(() => true);
     const createNodeMock = () => ({ contains });
 
