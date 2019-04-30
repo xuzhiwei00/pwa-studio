@@ -1,10 +1,13 @@
 import TestRenderer, { act } from 'react-test-renderer';
 
+/*
+ * Wrap rendering code in `act()`, for lifecycle purposes.
+ *
+ * https://reactjs.org/docs/test-utils.html#act
+ */
 export default (...args) => {
     let instance;
 
-    // wrap rendering code in `act()`
-    // https://reactjs.org/docs/test-utils.html#act
     act(() => {
         instance = TestRenderer.create(...args);
     });
