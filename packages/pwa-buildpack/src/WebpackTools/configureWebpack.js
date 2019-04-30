@@ -98,13 +98,12 @@ async function configureWebpack(appRoot, webpackCliEnv) {
                     ]
                 },
                 {
-                    include: [paths.src, /peregrine\/src\//],
                     test: /\.(mjs|js)$/,
                     use: [
                         {
                             loader: 'babel-loader',
                             options: {
-                                cacheDirectory: true,
+                                cacheDirectory: mode === 'development',
                                 envName: mode,
                                 rootMode: 'upward'
                             }

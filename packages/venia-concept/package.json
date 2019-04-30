@@ -1,6 +1,6 @@
 {
   "name": "@magento/venia-concept",
-  "version": "2.1.0",
+  "version": "3.0.0-beta.1",
   "publishConfig": {
     "access": "public"
   },
@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/magento-research/pwa-studio/tree/master/packages/venia-concept#readme",
   "dependencies": {
-    "@babel/runtime": "~7.3.4",
+    "@babel/runtime": "~7.4.2",
     "@magento/peregrine": "~2.1.0",
     "apollo-boost": "~0.1.28",
     "apollo-cache-inmemory": "~1.4.3",
@@ -44,7 +44,7 @@
     "apollo-link-http": "~1.5.11",
     "braintree-web-drop-in": "~1.16.0",
     "graphql-cli": "~3.0.11",
-    "graphql-cli-validate-magento-pwa-queries": "~1.0.0",
+    "graphql-cli-validate-magento-pwa-queries": "~1.1.0-beta.1",
     "graphql-tag": "~2.10.1",
     "informed": "~1.10.12",
     "lodash.debounce": "~4.0.8",
@@ -69,9 +69,9 @@
     "@babel/plugin-syntax-dynamic-import": "~7.2.0",
     "@babel/plugin-syntax-jsx": "~7.2.0",
     "@babel/plugin-transform-react-jsx": "~7.3.0",
-    "@babel/plugin-transform-runtime": "~7.3.4",
+    "@babel/plugin-transform-runtime": "~7.4.4",
     "@babel/preset-env": "~7.3.4",
-    "@magento/pwa-buildpack": "~2.1.0",
+    "@magento/pwa-buildpack": "~3.0.0-beta.1",
     "@magento/upward-js": "~2.1.0",
     "@storybook/react": "~4.1.13",
     "babel-core": "~7.0.0-bridge.0",
