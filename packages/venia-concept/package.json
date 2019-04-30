@@ -50,7 +50,6 @@
     "graphql-cli-validate-magento-pwa-queries": "~1.0.0",
     "graphql-tag": "~2.10.1",
     "informed": "~2.1.13",
-    "lodash.debounce": "~4.0.8",
     "lodash.over": "~4.7.0",
     "memoize-one": "~5.0.0",
     "prop-types": "~15.7.2",

@@ -8,12 +8,10 @@ import PRODUCT_SEARCH from 'src/queries/productSearch.graphql';
 import Suggestions from './suggestions';
 import defaultClasses from './autocomplete.css';
 
-const DEBOUNCE_WAIT = 200;
-
 const Autocomplete = props => {
     const { setVisible, visible } = props;
 
-    const [queryResult, queryApi] = useQuery(PRODUCT_SEARCH, DEBOUNCE_WAIT);
+    const [queryResult, queryApi] = useQuery(PRODUCT_SEARCH);
     const { data, error, loading } = queryResult;
     const { resetState, runQuery, setLoading } = queryApi;
 
@@ -44,10 +42,6 @@ const Autocomplete = props => {
         } else if (!value) {
             resetState();
         }
-
-        return () => {
-            runQuery.cancel();
-        };
     }, [resetState, runQuery, setLoading, valid, value, visible]);
 
     return (

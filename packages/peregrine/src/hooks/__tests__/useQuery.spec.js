@@ -1,15 +1,10 @@
 import React from 'react';
-import debounce from 'lodash.debounce';
 import { act } from 'react-test-renderer';
 import waitForExpect from 'wait-for-expect';
 
 import { useApolloContext } from '../useApolloContext';
 import { useQuery } from '../useQuery';
 import createTestInstance from '../../util/createTestInstance';
-
-jest.mock('lodash.debounce', () =>
-    Object.assign(jest.fn(arg => arg), { cancel: jest.fn() })
-);
 
 jest.mock('../useApolloContext', () => {
     const query = jest.fn(() => 'result');
@@ -36,8 +31,8 @@ const log = jest.fn();
 const QUERY = {};
 
 const Component = props => {
-    const { children, query, wait } = props;
-    const hookOutput = useQuery(query || QUERY, wait);
+    const { children, query } = props;
+    const hookOutput = useQuery(query || QUERY);
 
     log(...hookOutput);
 
@@ -60,20 +55,6 @@ test('returns query state and api', () => {
             runQuery: expect.any(Function)
         }
     );
-});
-
-test('debounces `runQuery`', () => {
-    createTestInstance(<Component />);
-
-    expect(debounce).toHaveBeenCalledTimes(1);
-    expect(debounce).toHaveBeenNthCalledWith(1, expect.any(Function), 0);
-});
-
-test('passes `wait` to `debounce`', () => {
-    createTestInstance(<Component wait={200} />);
-
-    expect(debounce).toHaveBeenCalledTimes(1);
-    expect(debounce).toHaveBeenNthCalledWith(1, expect.any(Function), 200);
 });
 
 test('`runQuery` runs a query and receives a response', async () => {
